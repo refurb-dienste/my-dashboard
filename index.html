@@ -13,12 +13,13 @@
         body { font-family: 'JetBrains Mono', monospace; background-color: var(--dunkelgruen); color: var(--beige); overflow-x: hidden; }
         .border-subtle { border-color: rgba(245, 245, 220, 0.1); }
         .btn-minimal { background-color: var(--beige); color: var(--dunkelgruen); text-transform: uppercase; font-weight: 700; transition: all 0.2s; }
+        .btn-minimal:hover { background-color: var(--hellgruen); }
         .btn-minimal:disabled { background-color: #2d3a33; color: #555; cursor: not-allowed; opacity: 0.5; }
         .card-dark { background-color: var(--waldgruen); border: 1px solid rgba(245, 245, 220, 0.1); }
         .sos-alert { animation: pulse-border 0.5s infinite; border: 2px solid #ef4444 !important; }
         @keyframes pulse-border { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .notiz-highlight { background-color: var(--warn-gelb); color: black; font-weight: bold; }
-        .wks-badge { background-color: rgba(74, 222, 128, 0.2); color: #fff; border: 1px solid var(--hellgruen); }
+        .wks-badge { background-color: rgba(74, 222, 128, 0.15); color: #fff; border: 1px solid rgba(74, 222, 128, 0.3); }
         input, select { background: rgba(0,0,0,0.3) !important; border: 1px solid rgba(245, 245, 220, 0.2) !important; color: var(--beige) !important; }
     </style>
 </head>
@@ -26,7 +27,7 @@
 
     <div id="loginScreen" class="fixed inset-0 bg-[#0f1a14] z-[600] flex items-center justify-center p-4">
         <div class="w-full max-w-md p-8 border border-subtle bg-[#1a2f23]">
-            <h1 class="text-2xl font-bold tracking-widest uppercase mb-10 text-center">REFURB_HUB</h1>
+            <h1 class="text-2xl font-bold tracking-widest uppercase mb-10 text-center italic">Refurb_Hub</h1>
             <div class="space-y-4">
                 <input type="text" id="userName" placeholder="NAME" class="w-full p-4 outline-none uppercase">
                 <select id="userStation" class="w-full p-4 outline-none">
@@ -42,9 +43,9 @@
                     <option value="WKS059">STATION WKS059</option>
                 </select>
                 <div class="py-4 space-y-3">
-                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-4 h-4"> <span class="text-xs uppercase">🧺 Wäsche-Dienst</span></label>
-                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkMull" class="w-4 h-4"> <span class="text-xs uppercase">🗑️ Müll-Dienst</span></label>
-                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkBoden" class="w-4 h-4"> <span class="text-xs uppercase">🧹 Boden-Dienst</span></label>
+                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-4 h-4"> <span class="text-[10px] uppercase">🧺 Wäsche-Dienst</span></label>
+                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkMull" class="w-4 h-4"> <span class="text-[10px] uppercase">🗑️ Müll-Dienst</span></label>
+                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkBoden" class="w-4 h-4"> <span class="text-[10px] uppercase">🧹 Boden-Dienst</span></label>
                 </div>
                 <button onclick="doLogin()" class="w-full btn-minimal p-5 text-sm tracking-widest">System Starten</button>
             </div>
@@ -55,7 +56,7 @@
         <header class="border-b border-subtle p-4 sticky top-0 bg-[#0f1a14]/95 backdrop-blur-sm z-50">
             <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="text-xl font-bold border border-beige px-2 uppercase">R</div>
+                    <div class="text-xl font-bold border border-beige px-2 uppercase italic">R</div>
                     <div>
                         <p id="displayUser" class="text-[10px] text-hellgruen uppercase font-bold"></p>
                         <div id="quickMachineStatus" class="flex gap-2 mt-1">
@@ -82,7 +83,7 @@
         </header>
 
         <div class="max-w-7xl mx-auto px-4 flex justify-end">
-            <div id="online-list" class="bg-black/40 border border-subtle p-2 mt-2 text-[8px] uppercase space-y-1 w-48">
+            <div id="online-list" class="bg-black/40 border border-subtle p-2 mt-2 text-[8px] uppercase space-y-1 w-48 shadow-2xl">
                 <p class="opacity-30 border-b border-subtle mb-1">Online Personal:</p>
                 <div id="user-rows"></div>
             </div>
@@ -105,12 +106,12 @@
                         <div id="notizList" class="flex flex-wrap gap-2"></div>
                     </div>
                     <div class="card-dark p-6">
-                        <h3 class="text-[10px] uppercase opacity-40 mb-4 tracking-widest border-b border-subtle pb-2">Offene Abholungen</h3>
+                        <h3 class="text-[10px] uppercase opacity-40 mb-4 tracking-widest border-b border-subtle pb-2">Warteschlange Abholung</h3>
                         <div id="wescheList" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
                     </div>
                 </div>
                 <div class="lg:col-span-4 space-y-4">
-                    <h3 class="text-[10px] uppercase opacity-40 text-center tracking-widest italic">Maschinen-Raum</h3>
+                    <h3 class="text-[10px] uppercase opacity-40 text-center tracking-widest italic font-bold">Maschinen-Steuerung</h3>
                     <div id="m-ui-1" class="card-dark p-4 border-l-4"></div>
                     <div id="m-ui-2" class="card-dark p-4 border-l-4"></div>
                     <div id="m-ui-3" class="card-dark p-4 border-l-4"></div>
@@ -130,13 +131,13 @@
     <script>
         const firebaseConfig = { apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ", databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", authDomain: "dienste-fluxs.firebaseapp.com", projectId: "dienste-fluxs", storageBucket: "dienste-fluxs.firebasestorage.app", messagingSenderId: "137594684055", appId: "1:137594684055:web:2e2ddc1ed5ce8ff8f6dfd2" };
         firebase.initializeApp(firebaseConfig); const database = firebase.database();
-        let userConfig = { name: "", station: "", wesche: false, mull: false, boden: false };
+        let userConfig = { name: "", station: "", wesche: false };
         let currentCount = 0; let freeMachines = 0; let activeIntervals = {};
 
         function doLogin() {
             const n = document.getElementById('userName').value; const s = document.getElementById('userStation').value; if(!n) return;
             userConfig = { name: n.toUpperCase(), station: s, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
-            const onlineRef = database.ref('online_users/' + n); onlineRef.set(userConfig); onlineRef.onDisconnect().remove();
+            database.ref('online_users/' + n).set(userConfig); database.ref('online_users/' + n).onDisconnect().remove();
             document.getElementById('displayUser').innerText = `${userConfig.name} | ${userConfig.station}`;
             document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden');
             if(userConfig.wesche) document.getElementById('weschePanel').classList.remove('hidden');
@@ -146,32 +147,25 @@
         }
 
         function syncApp() {
-            // Online Liste
             database.ref('online_users').on('value', s => {
                 const rows = document.getElementById('user-rows'); rows.innerHTML = '';
-                s.forEach(u => {
-                    const d = u.val();
-                    let dienste = [];
-                    if(d.wesche) dienste.push('W'); if(d.mull) dienste.push('M'); if(d.boden) dienste.push('B');
-                    rows.innerHTML += `<div class="flex justify-between border-b border-white/5 pb-1"><span>${d.name} (${d.station})</span><span class="text-hellgruen">${dienste.length > 0 ? dienste.join(',') : '-'}</span></div>`;
-                });
+                s.forEach(u => { const d = u.val(); let di = []; if(d.wesche) di.push('W'); if(d.mull) di.push('M'); if(d.boden) di.push('B'); rows.innerHTML += `<div class="flex justify-between border-b border-white/5 pb-1"><span>${d.name} (${d.station})</span><span class="text-hellgruen">${di.length>0?di.join(','):'-'}</span></div>`; });
             });
 
-            // Maschinen & Timer (wie vorher)
             [1, 2, 3].forEach(id => {
                 database.ref('timers/m'+id).on('value', s => {
                     const d = s.val(); const ui = document.getElementById('m-ui-'+id); const badge = document.getElementById('m'+id+'-badge');
                     if(activeIntervals[id]) clearInterval(activeIntervals[id]);
                     if(!d) {
                         ui.className = "card-dark p-4 border-l-4 border-hellgruen";
-                        ui.innerHTML = `<div class="flex justify-between font-bold text-[10px]"><span class="opacity-50">M${id}</span><span class="text-hellgruen font-bold">FREI</span></div><button onclick="startMachine(${id})" class="btn-minimal w-full mt-3 py-1 text-[9px]">START</button>`;
+                        ui.innerHTML = `<div class="flex justify-between font-bold text-[10px]"><span class="opacity-50">M${id}</span><span class="text-hellgruen">BEREIT</span></div><button onclick="startMachine(${id})" class="btn-minimal w-full mt-3 py-1 text-[9px]">START</button>`;
                         badge.className = "text-[8px] px-2 border border-hellgruen text-hellgruen"; badge.innerText = `M${id}: OK`;
                     } else {
                         ui.className = "card-dark p-4 border-l-4 border-white/20";
                         activeIntervals[id] = setInterval(() => {
                             const diff = d.endTime - Date.now();
                             if(diff <= 0) { ui.innerHTML = `<div class="flex justify-between text-red-500 font-bold text-[10px]"><span>M${id} FERTIG</span></div><button onclick="finishMachine(${id})" class="btn-minimal w-full mt-3 py-1 text-[9px]">ENTNEHMEN</button>`; }
-                            else { const m = Math.floor(diff/60000); const sec = Math.floor((diff%60000)/1000); ui.innerHTML = `<div class="flex justify-between text-[10px] opacity-70"><span>M${id} LÄUFT</span><span>${m}:${sec<10?'0':''}${sec}</span></div>`; }
+                            else { const m = Math.floor(diff/60000); const sec = Math.floor((diff%60000)/1000); ui.innerHTML = `<div class="flex justify-between text-[10px] opacity-70 mb-2"><span>M${id} LÄUFT</span><span>${m}:${sec<10?'0':''}${sec}</span></div><button onclick="finishMachine(${id})" class="text-[8px] text-red-400 underline uppercase tracking-widest w-full text-center hover:text-red-600 transition-colors">Stopp / Reset</button>`; }
                         }, 1000);
                         badge.className = "text-[8px] px-2 border border-white/10 opacity-40"; badge.innerText = `M${id}: BUSY`;
                     }
@@ -179,27 +173,22 @@
                 });
             });
 
-            // Wäsche-Anfragen
             database.ref('ves_pozivi').on('value', s => {
                 const list = document.getElementById('wescheList'); const nl = document.getElementById('notizList');
                 list.innerHTML = ''; nl.innerHTML = ''; currentCount = 0; let hasNotiz = false;
-                s.forEach(c => {
-                    const i = c.val(); currentCount++;
-                    if(i.notiz) { hasNotiz = true; nl.innerHTML += `<div class="notiz-highlight px-2 py-1 text-[9px] uppercase">⚠️ ${i.station}: ${i.notiz}</div>`; }
-                    list.innerHTML += `<div class="p-3 wks-badge text-center text-[10px] font-black ${i.urgent?'sos-alert':''}">📍 ${i.station}</div>`;
-                });
+                s.forEach(c => { const i = c.val(); currentCount++; if(i.notiz) { hasNotiz = true; nl.innerHTML += `<div class="notiz-highlight px-2 py-1 text-[9px] uppercase">⚠️ ${i.station}: ${i.notiz}</div>`; } list.innerHTML += `<div class="p-3 wks-badge text-center text-[10px] font-black ${i.urgent?'sos-alert':''}">📍 ${i.station}</div>`; });
                 document.getElementById('notizMonitor').classList.toggle('hidden', !hasNotiz);
                 updateGlobalState();
             });
 
-            // Müll
             database.ref('mull_pozivi').on('value', s => {
                 const l = document.getElementById('mullPanel'); l.innerHTML = '';
-                s.forEach(c => { l.innerHTML += `<div class="card-dark p-4 flex justify-between items-center text-[10px] font-bold"><span>📍 ${c.val().station} - ${c.val().detail}</span><button onclick="database.ref('mull_pozivi/${c.key}').remove()" class="btn-minimal px-3 py-1 uppercase">Erledigt</button></div>`; });
+                s.forEach(c => { l.innerHTML += `<div class="card-dark p-4 flex justify-between items-center text-[10px] font-bold uppercase"><span>📍 ${c.val().station} - ${c.val().detail}</span><button onclick="database.ref('mull_pozivi/${c.key}').remove()" class="btn-minimal px-3 py-1 text-[8px]">Erledigt</button></div>`; });
             });
         }
 
         async function updateGlobalState() {
+            if(!userConfig.wesche) return; // NUR FÜR WÄSCHEDIENST ANZEIGEN
             const snap = await database.ref('timers').once('value'); const t = snap.val() || {};
             freeMachines = 0; for(let i=1; i<=3; i++) { if(!t['m'+i]) freeMachines++; }
             const bar = document.getElementById('auto-notify'); const msg = document.getElementById('notify-msg'); const sub = document.getElementById('notify-sub'); const box = document.getElementById('notify-box'); const btn = document.getElementById('btn-rundgang');
@@ -208,35 +197,25 @@
                 bar.classList.remove('hidden');
                 if(currentCount >= 6) {
                     msg.innerText = `🚨 WAGEN VOLL (6/6)`;
-                    if(freeMachines < 2) { sub.innerText = `WARTEN: 2 MASCHINEN BENÖTIGT`; box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-red-500 bg-red-900/20"; btn.disabled = true; }
-                    else { sub.innerText = `STARTKLAR!`; box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-hellgruen bg-hellgruen/10"; btn.disabled = false; }
+                    if(freeMachines < 2) { sub.innerText = `WARTEN: 2 FREIE MASCHINEN BENÖTIGT`; box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-red-500 bg-red-900/20"; btn.disabled = true; }
+                    else { sub.innerText = `GENUG PLATZ FREI - LOS GEHT'S!`; box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-hellgruen bg-hellgruen/10"; btn.disabled = false; }
                 } else {
                     msg.innerText = `🧺 1 MASCHINE VOLL (3/6)`;
-                    if(freeMachines < 1) { sub.innerText = `MASCHINE BESETZT`; box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-warn-gelb bg-warn-gelb/10 text-warn-gelb"; btn.disabled = true; }
-                    else { sub.innerText = `1 MASCHINE FREI - RUNDGANG OK`; box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-warn-gelb bg-warn-gelb/10 text-warn-gelb"; btn.disabled = false; }
+                    if(freeMachines < 1) { sub.innerText = `KEINE MASCHINE FREI - BITTE WARTEN`; box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-warn-gelb bg-warn-gelb/10 text-warn-gelb"; btn.disabled = true; }
+                    else { sub.innerText = `1 MASCHINE FREI - RUNDGANG MÖGLICH`; box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-warn-gelb bg-warn-gelb/10 text-warn-gelb"; btn.disabled = false; }
                 }
             } else { bar.classList.add('hidden'); }
         }
 
         function sendWash() {
             const btn = document.getElementById('btn-wash-request'); const tDisplay = document.getElementById('wash-timer');
-            const n = document.getElementById('userNotiz').value; const u = document.getElementById('isUrgent').checked;
-            database.ref('ves_pozivi/'+Date.now()).set({ station: userConfig.station, notiz: n, urgent: u });
-            
-            // Sperre & Meldung
-            alert("Gesendet!");
-            btn.disabled = true; tDisplay.classList.remove('hidden');
-            let timeLeft = 20 * 60;
-            const timer = setInterval(() => {
-                timeLeft--;
-                const m = Math.floor(timeLeft/60); const s = timeLeft%60;
-                tDisplay.innerText = `Sperre: ${m}:${s<10?'0':''}${s}`;
-                if(timeLeft <= 0) { clearInterval(timer); btn.disabled = false; tDisplay.classList.add('hidden'); }
-            }, 1000);
+            database.ref('ves_pozivi/'+Date.now()).set({ station: userConfig.station, notiz: document.getElementById('userNotiz').value, urgent: document.getElementById('isUrgent').checked });
+            alert("Anfrage gesendet!"); btn.disabled = true; tDisplay.classList.remove('hidden');
+            let tl = 20 * 60; const timer = setInterval(() => { tl--; let m = Math.floor(tl/60); let s = tl%60; tDisplay.innerText = `SPERRE: ${m}:${s<10?'0':''}${s}`; if(tl <= 0) { clearInterval(timer); btn.disabled = false; tDisplay.classList.add('hidden'); } }, 1000);
             document.getElementById('userNotiz').value = ""; document.getElementById('isUrgent').checked = false;
         }
 
-        function startBodenCheck() { setInterval(() => { const t = new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit', timeZone:'Europe/Berlin'}); if(t === "14:00") document.getElementById('bodenModal').classList.remove('hidden'); }, 60000); }
+        function startBodenCheck() { setInterval(() => { if(new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit', timeZone:'Europe/Berlin'}) === "14:00") document.getElementById('bodenModal').classList.remove('hidden'); }, 60000); }
         function startRundgang() { database.ref('ves_pozivi').remove(); }
         function startMachine(id) { database.ref('timers/m'+id).set({ endTime: Date.now()+(80*60*1000) }); }
         function finishMachine(id) { database.ref('timers/m'+id).remove(); }
