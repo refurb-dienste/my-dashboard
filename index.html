@@ -38,8 +38,8 @@
                 </select>
 
                 <div class="grid grid-cols-1 gap-2">
-                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs">Wäschedienst Monitor</span></label>
-                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkMull" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs">Müll-Dienst Monitor</span></label>
+                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs">Wäschedienst</span></label>
+                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkMull" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs">Müll-Dienst</span></label>
                     <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkBoden" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs">Bodendienst</span></label>
                 </div>
                 <button onclick="doLogin()" class="w-full bg-[#1a3c34] text-white p-5 rounded-none uppercase hover:bg-black transition-all mt-4">Starten</button>
@@ -57,20 +57,23 @@
                 
                 <div class="flex flex-wrap items-center gap-2 bg-[#1a3c34] p-3 shadow-xl">
                     <span id="activeStationDisplay" class="bg-white px-3 py-2 text-[#1a3c34] text-xs"></span>
-                    
                     <div class="flex gap-1 border-r border-white/20 pr-2 mr-2">
                         <button onclick="quickMull('Restmüll 🗑️')" class="bg-slate-700 text-white px-3 py-2 text-[10px] uppercase hover:bg-black">Restmüll</button>
                         <button onclick="quickMull('Papier 📄')" class="bg-blue-700 text-white px-3 py-2 text-[10px] uppercase hover:bg-blue-900">Papier</button>
                     </div>
-
                     <select id="washType" class="p-2 rounded-none text-xs uppercase outline-none">
-                        <option value="Korb voll">🧺 Korb voll</option>
+                        <option value="Wäschekorb voll">🧺 Wäschekorb voll</option>
                     </select>
                     <input type="text" id="userNotiz" placeholder="NOTIZ" class="p-2 rounded-none text-xs uppercase outline-none w-32">
                     <label class="flex items-center bg-white/10 px-2 py-1 cursor-pointer text-white text-[10px] uppercase">
                         <input type="checkbox" id="isUrgent" class="mr-1 accent-red-500"> DRINGEND!
                     </label>
                     <button onclick="smartSend()" class="bg-white text-[#1a3c34] px-4 py-2 hover:bg-green-100 uppercase text-xs">Senden</button>
+                </div>
+
+                <div id="liveStatus" class="bg-slate-100 p-2 text-[9px] uppercase border border-slate-200 min-w-[150px]">
+                    <p class="font-black border-b border-slate-300 mb-1">Aktiv:</p>
+                    <div id="statusList" class="space-y-1"></div>
                 </div>
             </div>
         </header>
@@ -82,7 +85,7 @@
                         <h2 class="text-lg uppercase">Wäsche Monitor</h2>
                         <div class="flex flex-col items-end gap-2">
                             <div id="timer-display" class="text-3xl bg-slate-100 px-4 py-2 text-[#1a3c34]">90:00</div>
-                            <button onclick="resetStoppuhr()" class="text-[10px] bg-slate-200 px-2 py-1 uppercase hover:bg-slate-300">Reset ↻</button>
+                            <button onclick="triggerSyncTimer()" class="bg-[#1a3c34] text-white px-4 py-2 text-[10px] uppercase hover:bg-black">Maschine Start ↻</button>
                         </div>
                     </div>
                     <div id="wescheList" class="space-y-4"></div>
@@ -95,8 +98,8 @@
         </main>
     </div>
 
-    <div id="bodenModal" class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center hidden z-[200]">
-        <div class="bg-white p-12 rounded-none text-center max-w-lg border-b-[12px] border-[#1a3c34]">
+    <div id="bodenModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[200]">
+        <div class="bg-white p-12 text-center max-w-lg border-b-[12px] border-[#1a3c34]">
             <h2 class="text-3xl font-black mb-4 uppercase text-[#1a3c34]">Bodendienst</h2>
             <p class="text-slate-500 mb-8 font-bold text-xl uppercase">Boden reinigen!</p>
             <button onclick="closeBoden()" class="bg-[#1a3c34] text-white px-12 py-5 text-xl uppercase">Erledigt ✅</button>
@@ -121,46 +124,80 @@
         const database = firebase.database();
 
         let userConfig = { name: "", station: "", wesche: false, mull: false, boden: false };
-        let timeLeft = 90 * 60;
-        let timerInterval = null;
         let firstLoad = { wesche: true, mull: true };
+        let localTimerInterval = null;
 
         function doLogin() {
             const name = document.getElementById('userName').value;
             const station = document.getElementById('userStation').value;
             if(!name) return alert("NAME EINGEBEN!");
             userConfig = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
+            
+            // Register as Online
+            const onlineRef = database.ref('online_users/' + name + '_' + station);
+            onlineRef.set({ name, station, wesche: userConfig.wesche, mull: userConfig.mull, boden: userConfig.boden });
+            onlineRef.onDisconnect().remove();
+
             document.getElementById('displayUser').innerText = `USER: ${name} | ${station}`;
             document.getElementById('activeStationDisplay').innerText = station;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            if(userConfig.wesche) { document.getElementById('weschePanel').classList.remove('hidden'); startStoppuhr(); }
+            
+            if(userConfig.wesche) document.getElementById('weschePanel').classList.remove('hidden');
             if(userConfig.mull) document.getElementById('mullPanel').classList.remove('hidden');
+            
+            listenToTimer();
+            listenToOnlineUsers();
         }
 
-        function startStoppuhr() {
-            if(timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                let min = Math.floor(timeLeft / 60); let sek = timeLeft % 60;
-                document.getElementById('timer-display').textContent = (min < 10 ? "0":"") + min + ":" + (sek < 10 ? "0":"") + sek;
-                if(timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    document.getElementById('timer-display').textContent = "FERTIG!";
-                    document.getElementById('weschePanel').classList.add('timer-finished');
-                    document.getElementById('alarm-finished').play();
-                }
-                timeLeft--;
-            }, 1000);
-        }
-
-        function resetStoppuhr() { 
-            timeLeft = 90 * 60; 
-            document.getElementById('weschePanel').classList.remove('timer-finished'); 
-            startStoppuhr();
+        // SYNC TIMER LOGIC
+        function triggerSyncTimer() {
+            const endTime = Date.now() + (90 * 60 * 1000);
+            database.ref('sync_timer').set({ endTime, startedBy: userConfig.name });
             database.ref('ves_pozivi/SYSTEM').set({ 
-                station: "INFO", detail: "🔄 MASCHINE LEER", notiz: "Bereit für neue Wäsche", 
+                station: "INFO", detail: "🔄 MASCHINE START", notiz: "Läuft für 90 min", 
                 urgent: false, sender: userConfig.name, 
                 time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
+            });
+        }
+
+        function listenToTimer() {
+            database.ref('sync_timer').on('value', (s) => {
+                const data = s.val();
+                if(!data) return;
+                if(localTimerInterval) clearInterval(localTimerInterval);
+                document.getElementById('weschePanel').classList.remove('timer-finished');
+
+                localTimerInterval = setInterval(() => {
+                    const now = Date.now();
+                    const diff = data.endTime - now;
+                    if(diff <= 0) {
+                        clearInterval(localTimerInterval);
+                        document.getElementById('timer-display').textContent = "FERTIG!";
+                        document.getElementById('weschePanel').classList.add('timer-finished');
+                        if(userConfig.wesche) document.getElementById('alarm-finished').play();
+                    } else {
+                        const totalSec = Math.floor(diff / 1000);
+                        const min = Math.floor(totalSec / 60);
+                        const sek = totalSec % 60;
+                        document.getElementById('timer-display').textContent = (min < 10 ? "0":"") + min + ":" + (sek < 10 ? "0":"") + sek;
+                    }
+                }, 1000);
+            });
+        }
+
+        function listenToOnlineUsers() {
+            database.ref('online_users').on('value', (s) => {
+                const list = document.getElementById('statusList');
+                list.innerHTML = '';
+                if(!s.val()) return;
+                Object.values(s.val()).forEach(u => {
+                    let roles = [];
+                    if(u.wesche) roles.push("Wäsche");
+                    if(u.mull) roles.push("Müll");
+                    if(u.boden) roles.push("Boden");
+                    list.innerHTML += `<div><span class="text-[#1a3c34] font-black">${u.name} (${u.station})</span>: ${roles.join(', ')}</div>`;
+                });
             });
         }
 
@@ -169,7 +206,6 @@
                 station: userConfig.station, detail: type, notiz: "", urgent: false,
                 sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
             });
-            alert(type + " GESENDET!");
         }
 
         function smartSend() {
@@ -206,19 +242,13 @@
                 snapshot.forEach(child => {
                     const item = child.val();
                     let statusClass = item.seen ? 'is-seen' : (item.urgent ? 'dringend-alert' : 'urgent-alert');
-                    container.innerHTML += `
-                        <div class="bg-slate-50 p-4 border-l-8 border-[#1a3c34] flex justify-between items-center ${statusClass}">
-                            <div>
-                                <p class="text-[10px] text-[#1a3c34] uppercase font-black tracking-widest">${item.station} ${item.urgent ? '🔥 DRINGEND' : ''} ${item.seen ? '✅ GESEHEN' : ''}</p>
-                                <p class="text-lg uppercase font-black">${item.detail}</p>
-                                ${item.notiz ? `<p class="text-xs bg-yellow-100 p-1 mt-1 border border-yellow-200">INFO: ${item.notiz}</p>` : ''}
-                                <p class="text-[8px] text-slate-400 mt-1 uppercase">${item.time} - Von: ${item.sender}</p>
-                            </div>
-                            <div class="flex gap-1">
-                                <button onclick="markAsSeen('${path}', '${child.key}')" class="bg-slate-200 text-black p-3 hover:bg-slate-300">👁️</button>
-                                <button onclick="removeItem('${path}', '${child.key}')" class="bg-black text-white p-3 hover:bg-green-800">✔️</button>
-                            </div>
-                        </div>`;
+                    container.innerHTML += `<div class="bg-slate-50 p-4 border-l-8 border-[#1a3c34] flex justify-between items-center ${statusClass}">
+                        <div><p class="text-[10px] text-[#1a3c34] uppercase font-black">${item.station} ${item.urgent ? '🔥 DRINGEND' : ''}</p>
+                        <p class="text-lg uppercase font-black">${item.detail}</p>
+                        ${item.notiz ? `<p class="text-xs bg-yellow-100 p-1 mt-1 border border-yellow-200">INFO: ${item.notiz}</p>` : ''}
+                        <p class="text-[8px] text-slate-400 mt-1 lowercase">${item.time} - Von: ${item.sender}</p></div>
+                        <div class="flex gap-1"><button onclick="markAsSeen('${path}', '${child.key}')" class="bg-slate-200 text-black p-3 hover:bg-slate-300">👁️</button>
+                        <button onclick="removeItem('${path}', '${child.key}')" class="bg-black text-white p-3 hover:bg-green-800">✔️</button></div></div>`;
                 });
             } else { container.innerHTML = '<p class="text-slate-300 italic text-xs uppercase">Warten...</p>'; }
         }
