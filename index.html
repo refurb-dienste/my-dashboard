@@ -3,66 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Refurb-Logistik Pro</title>
+    <title>aufbereitung-dienste</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { font-family: 'Courier New', Courier, monospace; font-weight: bold; background-color: #f0f4f0; }
-        .urgent-alert { animation: pulse 2s infinite; }
-        .dringend-alert { animation: pulse 0.8s infinite; border-left-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
+        
+        body { font-family: 'JetBrains Mono', monospace; background-color: #f4f7f4; }
+        
+        .urgent-alert { animation: pulse 2s infinite; border-left: 8px solid #ef4444 !important; }
+        .dringend-alert { animation: pulse 0.8s infinite; border-left: 8px solid #ef4444 !important; background-color: #fef2f2 !important; }
+        
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-        .timer-finished { background-color: #ef4444 !important; color: white !important; animation: pulse 1s infinite; border: 2px solid black !important; }
-        .eff-full { background-color: #dc2626; color: white; animation: pulse 0.5s infinite; }
-        .feedback-pop { animation: slideUp 2s forwards; }
-        @keyframes slideUp { 0% { opacity:0; transform:translateY(10px); } 10% { opacity:1; transform:translateY(0); } 90% { opacity:1; } 100% { opacity:0; } }
+        
+        .timer-finished { background-color: #ef4444 !important; color: white !important; border: 3px solid black !important; }
+        .btn-alarm { animation: blinkRed 0.5s infinite; background-color: #ef4444 !important; color: white !important; }
+        
+        @keyframes blinkRed { 0% { background-color: #ef4444; } 50% { background-color: #000; } 100% { background-color: #ef4444; } }
+
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .dark-green-gradient { background: linear-gradient(135deg, #1a3c34 0%, #0d211d 100%); }
     </style>
 </head>
-<body class="min-h-screen text-slate-900">
+<body class="min-h-screen text-slate-900 pb-10">
 
-    <div id="sendFeedback" class="hidden fixed bottom-10 left-1/2 -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-full z-[300] font-black uppercase shadow-2xl feedback-pop">
-        Gesendet! ✅
+    <div id="sendFeedback" class="hidden fixed bottom-10 left-1/2 -translate-x-1/2 bg-[#1a3c34] text-white px-8 py-4 rounded-full z-[300] font-black uppercase shadow-2xl tracking-widest border-2 border-white">
+        GESENDET! 🚀✅
     </div>
 
     <div id="loginScreen" class="fixed inset-0 bg-[#1a3c34] z-[100] flex items-center justify-center p-6">
-        <div class="bg-white p-8 rounded-none shadow-2xl max-w-md w-full text-center border-b-[12px] border-[#1a3c34]">
-            <h1 class="text-3xl font-black mb-6 uppercase italic">Aufbereitung</h1>
+        <div class="bg-white p-10 rounded-3xl shadow-2xl max-w-md w-full text-center border-b-[15px] border-emerald-900">
+            <h1 class="text-4xl font-extrabold mb-8 uppercase italic tracking-tighter text-slate-800">AUFBEREITUNG</h1>
             <div class="space-y-4 text-left">
-                <input type="text" id="userName" placeholder="DEIN NAME" class="w-full bg-slate-100 border-2 border-slate-200 p-4 outline-none focus:border-[#1a3c34]">
-                <select id="userStation" class="w-full bg-slate-100 border-2 border-slate-200 p-4 font-bold uppercase">
+                <input type="text" id="userName" placeholder="DEIN NAME" class="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-xl outline-none focus:border-[#1a3c34] font-bold">
+                <select id="userStation" class="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-xl font-bold uppercase cursor-pointer">
                     <option value="wks050">wks050</option><option value="wks051">wks051</option><option value="wks052">wks052</option>
                     <option value="wks053">wks053</option><option value="wks054">wks054</option><option value="wks055">wks055</option>
                     <option value="wks056">wks056</option><option value="wks057">wks057</option><option value="wks058">wks058</option><option value="wks059">wks059</option>
                 </select>
-                <div class="grid grid-cols-1 gap-2 mt-4">
-                    <label class="flex items-center p-3 bg-slate-50 border cursor-pointer"><input type="checkbox" id="checkWesche" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-[11px] font-black">Wäschedienst</span></label>
-                    <label class="flex items-center p-3 bg-slate-50 border cursor-pointer"><input type="checkbox" id="checkMull" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-[11px] font-black">Müll-Dienst</span></label>
-                    <label class="flex items-center p-3 bg-slate-50 border cursor-pointer"><input type="checkbox" id="checkBoden" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-[11px] font-black">Bodendienst</span></label>
+                <div class="grid grid-cols-1 gap-3 mt-6">
+                    <label class="flex items-center p-4 bg-slate-50 border-2 border-slate-100 rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"><input type="checkbox" id="checkWesche" class="w-6 h-6 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-extrabold tracking-wider">Wäschedienst</span></label>
+                    <label class="flex items-center p-4 bg-slate-50 border-2 border-slate-100 rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"><input type="checkbox" id="checkMull" class="w-6 h-6 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-extrabold tracking-wider">Müll-Dienst</span></label>
+                    <label class="flex items-center p-4 bg-slate-50 border-2 border-slate-100 rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"><input type="checkbox" id="checkBoden" class="w-6 h-6 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-extrabold tracking-wider">Bodendienst</span></label>
                 </div>
-                <button onclick="doLogin()" class="w-full bg-[#1a3c34] text-white p-5 uppercase font-black mt-4 shadow-lg text-xl hover:bg-black">Start</button>
+                <button onclick="doLogin()" class="w-full dark-green-gradient text-white p-5 rounded-2xl uppercase font-black mt-6 shadow-xl text-2xl hover:scale-[1.02] transition-transform tracking-widest">START</button>
             </div>
         </div>
     </div>
 
     <div id="mainApp" class="hidden">
-        <header class="bg-white border-b-4 border-[#1a3c34] p-4 sticky top-0 z-50 shadow-md">
+        <header class="bg-white/80 backdrop-blur-md border-b-4 border-[#1a3c34] p-4 sticky top-0 z-50 shadow-lg">
             <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-[#1a3c34] text-white flex items-center justify-center text-xl font-black italic">A</div>
-                    <div><h1 class="font-black text-xl uppercase italic">Aufbereitung</h1><p id="displayUser" class="text-[10px] text-[#1a3c34] font-bold uppercase"></p></div>
+                    <div class="w-12 h-12 dark-green-gradient text-white flex items-center justify-center text-2xl font-black rounded-2xl rotate-3 shadow-lg">A</div>
+                    <div><h1 class="font-extrabold text-2xl uppercase italic tracking-tighter text-slate-800">AUFBEREITUNG</h1><p id="displayUser" class="text-[10px] text-emerald-700 font-black uppercase tracking-widest"></p></div>
                 </div>
                 
-                <div class="flex flex-wrap items-center gap-2 bg-[#1a3c34] p-3 shadow-xl text-white">
-                    <span id="activeStationDisplay" class="bg-white px-3 py-2 text-[#1a3c34] text-xs font-black"></span>
-                    <button onclick="quickMull('Restmüll 🗑️')" class="bg-slate-700 px-3 py-2 text-[10px] uppercase font-black">Restmüll</button>
-                    <button onclick="quickMull('Papier 📄')" class="bg-blue-700 px-3 py-2 text-[10px] uppercase font-black">Papier</button>
-                    <button onclick="sendWash()" class="bg-white text-[#1a3c34] px-4 py-2 uppercase text-xs font-black italic">🧺 Wäschekorb voll</button>
-                    <input type="text" id="userNotiz" placeholder="NOTIZ" class="p-2 text-xs uppercase text-slate-900 w-32 font-bold outline-none">
-                    <label class="flex items-center text-[10px] uppercase font-black"><input type="checkbox" id="isUrgent" class="mr-1 accent-red-500"> Dringend</label>
+                <div class="flex flex-wrap items-center gap-2 dark-green-gradient p-3 rounded-2xl shadow-2xl text-white">
+                    <span id="activeStationDisplay" class="bg-white px-4 py-2 text-[#1a3c34] text-xs font-black rounded-lg shadow-inner"></span>
+                    <button onclick="quickMull('Restmüll 🗑️')" class="bg-slate-700/50 px-3 py-2 text-[10px] uppercase font-black rounded-lg hover:bg-black transition-colors">Restmüll</button>
+                    <button onclick="quickMull('Papier 📄')" class="bg-blue-800/50 px-3 py-2 text-[10px] uppercase font-black rounded-lg hover:bg-blue-900 transition-colors">Papier</button>
+                    <button onclick="sendWash()" class="bg-white text-[#1a3c34] px-5 py-2 uppercase text-xs font-black italic rounded-lg hover:bg-emerald-50 shadow-md">🧺 WÄSCHEKORB VOLL</button>
+                    <input type="text" id="userNotiz" placeholder="NAPOMENA..." class="p-2 text-xs uppercase text-slate-900 w-36 font-bold rounded-lg outline-none border-2 border-emerald-900/20">
+                    <label class="flex items-center text-[10px] uppercase font-black px-2 cursor-pointer"><input type="checkbox" id="isUrgent" class="mr-2 w-4 h-4 accent-red-500"> DRINGEND!</label>
                 </div>
 
-                <div id="liveStatus" class="bg-slate-100 p-2 text-[9px] uppercase border border-slate-200 min-w-[200px] max-h-32 overflow-y-auto">
-                    <p class="font-black border-b border-slate-300 mb-1">Status & Wagen:</p>
+                <div id="liveStatus" class="bg-slate-100 p-3 text-[9px] uppercase border-2 border-slate-200 rounded-xl min-w-[220px] max-h-32 overflow-y-auto shadow-inner">
+                    <p class="font-black border-b-2 border-slate-300 mb-2 pb-1 flex justify-between"><span>Live Status:</span> <span class="animate-pulse text-emerald-600">●</span></p>
                     <div id="statusList" class="space-y-1"></div>
                 </div>
             </div>
@@ -70,57 +78,60 @@
 
         <main class="max-w-7xl mx-auto p-6">
             <div id="weschePanel" class="hidden space-y-8">
-                <div id="notizMonitor" class="bg-yellow-50 border-4 border-yellow-400 p-4 hidden">
-                    <h3 class="text-xs font-black uppercase mb-2 text-yellow-700 underline">⚠️ Sonderwünsche / Notizen:</h3>
-                    <div id="notizList" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                <div id="notizMonitor" class="bg-yellow-100 border-4 border-yellow-400 p-5 rounded-2xl shadow-xl hidden">
+                    <h3 class="text-xs font-black uppercase mb-3 text-yellow-800 flex items-center gap-2">
+                        <span class="text-lg">⚠️</span> SONDERWÜNSCHE (AKTIV BIS WAGEN LEER):
+                    </h3>
+                    <div id="notizList" class="flex flex-wrap gap-3"></div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <div class="lg:col-span-2 bg-white p-4 border-t-4 border-slate-400">
-                        <h3 class="text-xs uppercase font-black mb-4 tracking-widest text-slate-400">Offene Anfragen (Halle)</h3>
-                        <div id="wescheList" class="space-y-2"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-3xl border-t-8 border-slate-300 shadow-md">
+                        <h3 class="text-xs uppercase font-black mb-6 tracking-[0.2em] text-slate-400 flex justify-between">ANFRAGEN AUS DER HALLE <span id="openCount" class="text-slate-800">0</span></h3>
+                        <div id="wescheList" class="space-y-3"></div>
                     </div>
 
-                    <div class="lg:col-span-1 bg-white p-4 border-t-4 border-blue-500 shadow-lg">
-                        <h3 class="text-xs uppercase font-black mb-1 text-blue-600">Mein Einkaufskorb</h3>
-                        <div id="efficiency-status" class="text-[9px] uppercase font-black p-2 mb-2 bg-slate-100 text-center">Leer</div>
-                        <div id="myCartList" class="space-y-2"></div>
-                        <button onclick="clearMyCart()" class="w-full mt-4 bg-blue-600 text-white py-2 text-[10px] uppercase font-black hover:bg-black">Wagen leeren ✔️</button>
+                    <div class="lg:col-span-1 bg-white p-6 rounded-3xl border-t-8 border-[#1a3c34] shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-2 opacity-5 text-4xl rotate-12">🧺</div>
+                        <h3 class="text-xs uppercase font-black mb-1 text-emerald-800">WÄSCHEWAGEN</h3>
+                        <div id="efficiency-status" class="text-[10px] uppercase font-black p-3 mb-4 rounded-xl bg-slate-50 text-center border border-slate-100">Bereit...</div>
+                        <div id="myCartList" class="space-y-3"></div>
+                        <button onclick="clearMyCart()" class="w-full mt-6 dark-green-gradient text-white py-4 rounded-xl text-xs uppercase font-extrabold hover:scale-95 transition-all shadow-lg">WAGEN LEEREN ✔️</button>
                     </div>
 
                     <div class="lg:col-span-1 space-y-4">
-                        <h3 class="text-xs uppercase font-black text-slate-400">Waschturm</h3>
-                        <div id="timer-box-1" class="bg-white p-4 border-t-4 border-slate-200 text-center">
-                            <p class="text-[9px] uppercase">Maschine 1</p><div id="timer-val-1" class="text-2xl font-black mb-2">80:00</div>
-                            <div class="flex gap-1"><button id="btn-start-1" onclick="triggerTimer(1)" class="flex-1 bg-[#1a3c34] text-white py-2 text-[10px] font-black uppercase">Start</button>
-                            <button id="btn-clear-1" onclick="clearTimer(1)" class="hidden flex-1 bg-black text-white py-2 text-[10px] font-black uppercase">Leeren</button></div>
+                        <h3 class="text-xs uppercase font-black text-slate-400 tracking-widest">WASCHTURM</h3>
+                        <div id="timer-box-1" class="bg-white p-5 rounded-2xl border-b-4 border-slate-200 shadow-md text-center transition-all">
+                            <p class="text-[10px] font-black uppercase mb-1">Maschine 1</p><div id="timer-val-1" class="text-3xl font-black mb-3">80:00</div>
+                            <div class="flex gap-2"><button id="btn-start-1" onclick="triggerTimer(1)" class="flex-1 bg-slate-100 p-3 rounded-lg text-[10px] font-black uppercase hover:bg-emerald-100">START</button>
+                            <button id="btn-clear-1" onclick="clearTimer(1)" class="hidden flex-1 p-3 rounded-lg text-[10px] font-black uppercase">LEEREN 🚨</button></div>
                         </div>
-                        <div id="timer-box-2" class="bg-white p-4 border-t-4 border-slate-200 text-center">
-                            <p class="text-[9px] uppercase">Maschine 2</p><div id="timer-val-2" class="text-2xl font-black mb-2">80:00</div>
-                            <div class="flex gap-1"><button id="btn-start-2" onclick="triggerTimer(2)" class="flex-1 bg-[#1a3c34] text-white py-2 text-[10px] font-black uppercase">Start</button>
-                            <button id="btn-clear-2" onclick="clearTimer(2)" class="hidden flex-1 bg-black text-white py-2 text-[10px] font-black uppercase">Leeren</button></div>
+                        <div id="timer-box-2" class="bg-white p-5 rounded-2xl border-b-4 border-slate-200 shadow-md text-center transition-all">
+                            <p class="text-[10px] font-black uppercase mb-1">Maschine 2</p><div id="timer-val-2" class="text-3xl font-black mb-3">80:00</div>
+                            <div class="flex gap-2"><button id="btn-start-2" onclick="triggerTimer(2)" class="flex-1 bg-slate-100 p-3 rounded-lg text-[10px] font-black uppercase hover:bg-emerald-100">START</button>
+                            <button id="btn-clear-2" onclick="clearTimer(2)" class="hidden flex-1 p-3 rounded-lg text-[10px] font-black uppercase">LEEREN 🚨</button></div>
                         </div>
-                        <div id="timer-box-3" class="bg-white p-4 border-t-4 border-slate-200 text-center">
-                            <p class="text-[9px] uppercase">Maschine 3</p><div id="timer-val-3" class="text-2xl font-black mb-2">80:00</div>
-                            <div class="flex gap-1"><button id="btn-start-3" onclick="triggerTimer(3)" class="flex-1 bg-[#1a3c34] text-white py-2 text-[10px] font-black uppercase">Start</button>
-                            <button id="btn-clear-3" onclick="clearTimer(3)" class="hidden flex-1 bg-black text-white py-2 text-[10px] font-black uppercase">Leeren</button></div>
+                        <div id="timer-box-3" class="bg-white p-5 rounded-2xl border-b-4 border-slate-200 shadow-md text-center transition-all">
+                            <p class="text-[10px] font-black uppercase mb-1">Maschine 3</p><div id="timer-val-3" class="text-3xl font-black mb-3">80:00</div>
+                            <div class="flex gap-2"><button id="btn-start-3" onclick="triggerTimer(3)" class="flex-1 bg-slate-100 p-3 rounded-lg text-[10px] font-black uppercase hover:bg-emerald-100">START</button>
+                            <button id="btn-clear-3" onclick="clearTimer(3)" class="hidden flex-1 p-3 rounded-lg text-[10px] font-black uppercase">LEEREN 🚨</button></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="mullPanel" class="hidden bg-white p-6 border-t-8 border-slate-800 shadow-sm max-w-2xl">
-                <h2 class="text-sm font-black uppercase mb-4 tracking-widest">Müll Monitor</h2>
-                <div id="mullList" class="space-y-2"></div>
+            <div id="mullPanel" class="hidden bg-white p-8 rounded-3xl border-l-[12px] border-slate-800 shadow-xl max-w-2xl">
+                <h2 class="text-sm font-black uppercase mb-6 tracking-[0.3em]">Müll Monitor</h2>
+                <div id="mullList" class="space-y-3"></div>
             </div>
         </main>
     </div>
 
     <div id="bodenModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[200]">
-        <div class="bg-white p-12 text-center max-w-lg border-b-[12px] border-[#1a3c34]">
-            <h2 class="text-3xl font-black mb-4 uppercase">Bodendienst</h2>
-            <p class="text-slate-500 mb-8 font-bold text-xl uppercase italic">Boden jetzt reinigen!</p>
-            <button onclick="closeBoden()" class="bg-[#1a3c34] text-white px-12 py-5 text-xl uppercase font-black">Erledigt ✅</button>
+        <div class="bg-white p-16 text-center max-w-xl rounded-[40px] border-b-[20px] border-[#1a3c34] shadow-2xl">
+            <h2 class="text-5xl font-black mb-6 uppercase tracking-tighter">BODENDIENST</h2>
+            <p class="text-slate-400 mb-10 font-bold text-2xl uppercase italic">Bitte jetzt Boden reinigen!</p>
+            <button onclick="closeBoden()" class="dark-green-gradient text-white px-16 py-6 rounded-2xl text-2xl font-black shadow-2xl hover:scale-110 transition-transform">ERLEDIGT ✅</button>
         </div>
     </div>
 
@@ -143,7 +154,7 @@
         function doLogin() {
             const name = document.getElementById('userName').value;
             const station = document.getElementById('userStation').value;
-            if(!name) return alert("BITTE NAMEN EINGEBEN!");
+            if(!name) return alert("NAME?");
             userConfig = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
             const onlineRef = database.ref('online_users/' + name + '_' + station);
             onlineRef.set(userConfig); onlineRef.onDisconnect().remove();
@@ -168,7 +179,7 @@
                 Object.values(s.val()).forEach(u => {
                     let r = []; if(u.wesche) r.push("Wäsche"); if(u.mull) r.push("Müll"); if(u.boden) r.push("Boden");
                     if(r.length === 0) r.push("Melder");
-                    list.innerHTML += `<div class="border-b pb-1 text-[8px]"><span class="font-black text-[#1a3c34]">${u.name} (${u.station})</span>: <span class="text-slate-400">${r.join(', ')}</span></div>`;
+                    list.innerHTML += `<div class="border-b border-slate-200 pb-1 flex justify-between"><span class="font-black text-[#1a3c34]">${u.name} (${u.station})</span> <span class="text-slate-400 font-bold">${r.join(', ')}</span></div>`;
                 });
             });
         }
@@ -176,7 +187,7 @@
         function sendWash() {
             const notiz = document.getElementById('userNotiz').value;
             const urgent = document.getElementById('isUrgent').checked;
-            database.ref('ves_pozivi/' + userConfig.station).set({ 
+            database.ref('ves_pozivi/' + Date.now()).set({ 
                 station: userConfig.station, detail: "Wäschekorb voll", notiz, urgent,
                 sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seenBy: ""
             });
@@ -201,8 +212,9 @@
                     const btnClear = document.getElementById('btn-clear-' + id);
                     
                     if(activeIntervals[id]) clearInterval(activeIntervals[id]);
-                    box.classList.remove('timer-finished', 'bg-red-50');
-                    
+                    box.classList.remove('timer-finished', 'border-black');
+                    btnClear.classList.remove('btn-alarm');
+
                     if(!data) {
                         val.textContent = "80:00"; btnStart.classList.remove('hidden'); btnClear.classList.add('hidden');
                         return;
@@ -213,7 +225,10 @@
                     activeIntervals[id] = setInterval(() => {
                         const diff = data.endTime - Date.now();
                         if(diff <= 0) {
-                            clearInterval(activeIntervals[id]); val.textContent = "FERTIG!"; box.classList.add('timer-finished');
+                            clearInterval(activeIntervals[id]); 
+                            val.textContent = "FERTIG! 🚨"; 
+                            box.classList.add('timer-finished');
+                            btnClear.classList.add('btn-alarm');
                         } else {
                             const total = Math.floor(diff / 1000); const m = Math.floor(total / 60); const s = total % 60;
                             val.textContent = (m < 10 ? "0":"") + m + ":" + (s < 10 ? "0":"") + s;
@@ -224,7 +239,7 @@
         }
 
         function quickMull(type) {
-            database.ref('mull_pozivi/' + userConfig.station).set({ 
+            database.ref('mull_pozivi/' + Date.now()).set({ 
                 station: userConfig.station, detail: type, sender: userConfig.name, 
                 time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
             });
@@ -239,33 +254,39 @@
             const myCart = document.getElementById('myCartList');
             const notizList = document.getElementById('notizList');
             const notizMonitor = document.getElementById('notizMonitor');
+            const openCount = document.getElementById('openCount');
             
             mainList.innerHTML = ''; myCart.innerHTML = ''; notizList.innerHTML = '';
-            let countInCart = 0; let hasNotizen = false;
+            let countInCart = 0; let totalOpen = 0; let hasNotizen = false;
 
             snapshot.forEach(child => {
                 const item = child.val();
                 const key = child.key;
-                const card = `<div class="bg-white p-3 border-l-4 border-[#1a3c34] shadow-sm flex justify-between items-center text-[11px] ${item.urgent ? 'dringend-alert' : ''}">
-                    <div><p class="font-black">${item.station}</p><p class="text-[9px]">${item.time} ${item.notiz ? '- ' + item.notiz : ''}</p></div>
-                    <div class="flex gap-1">
-                        ${!item.seenBy ? `<button onclick="takeToCart('${key}')" class="bg-slate-200 p-2">👁️</button>` : ''}
-                        ${item.seenBy === userConfig.name ? `<button onclick="removeItem('ves_pozivi', '${key}')" class="bg-black text-white p-2">✔️</button>` : ''}
+                
+                // NOTIZ MONITOR LOGIK: Bleibt aktiv solange im System ODER in meinem Wagen
+                if(item.notiz && (!item.seenBy || item.seenBy === userConfig.name)) {
+                    hasNotizen = true;
+                    notizList.innerHTML += `<div class="bg-white border-2 border-yellow-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-sm">Station ${item.station}: ${item.notiz}</div>`;
+                }
+
+                const card = `<div class="bg-slate-50 p-4 rounded-2xl border-l-8 border-[#1a3c34] shadow-sm flex justify-between items-center ${item.urgent && !item.seenBy ? 'dringend-alert' : ''}">
+                    <div><p class="font-black text-sm">${item.station}</p><p class="text-[9px] font-bold text-slate-400 uppercase">${item.time} ${item.notiz ? '⚡ Napomena' : ''}</p></div>
+                    <div class="flex gap-2">
+                        ${!item.seenBy ? `<button onclick="takeToCart('${key}')" class="bg-emerald-100 text-emerald-900 p-3 rounded-xl font-black text-[10px]">PICK 👁️</button>` : ''}
+                        ${item.seenBy === userConfig.name ? `<button onclick="removeItem('ves_pozivi', '${key}')" class="bg-black text-white p-3 rounded-xl text-[10px] font-black">OK ✔️</button>` : ''}
                     </div>
                 </div>`;
 
                 if(!item.seenBy) {
                     mainList.innerHTML += card;
-                    if(item.notiz) {
-                        hasNotizen = true;
-                        notizList.innerHTML += `<div class="bg-white border-2 border-yellow-400 p-2 text-[10px] font-black uppercase">Station ${item.station}: ${item.notiz}</div>`;
-                    }
+                    totalOpen++;
                 } else if(item.seenBy === userConfig.name) {
                     myCart.innerHTML += card;
                     countInCart++;
                 }
             });
 
+            openCount.innerText = totalOpen;
             notizMonitor.classList.toggle('hidden', !hasNotizen);
             updateEfficiency(countInCart);
         }
@@ -275,15 +296,16 @@
             const list = document.getElementById('mullList'); list.innerHTML = '';
             snapshot.forEach(child => {
                 const item = child.val();
-                list.innerHTML += `<div class="bg-slate-100 p-3 border-l-4 border-slate-800 flex justify-between items-center text-xs">
-                    <div><p class="font-black">${item.station}</p><p>${item.detail}</p></div>
-                    <button onclick="removeItem('mull_pozivi', '${child.key}')" class="bg-black text-white p-2 text-[10px]">ERLEDIGT</button>
+                list.innerHTML += `<div class="bg-slate-50 p-4 rounded-2xl border-l-8 border-slate-800 flex justify-between items-center shadow-md">
+                    <div><p class="font-black text-sm uppercase">${item.station}</p><p class="text-[10px] font-bold text-slate-400 italic">${item.detail} | ${item.time}</p></div>
+                    <button onclick="removeItem('mull_pozivi', '${child.key}')" class="bg-black text-white px-5 py-3 rounded-xl text-[10px] font-black">LEER ✔️</button>
                 </div>`;
             });
         }
 
         function takeToCart(key) { database.ref('ves_pozivi/' + key).update({ seenBy: userConfig.name }); }
         function removeItem(path, key) { database.ref(path + '/' + key).remove(); }
+        
         function clearMyCart() {
             database.ref('ves_pozivi').once('value', s => {
                 s.forEach(c => { if(c.val().seenBy === userConfig.name) c.ref.remove(); });
@@ -292,8 +314,8 @@
 
         function updateEfficiency(count) {
             const el = document.getElementById('efficiency-status');
-            if(count >= 6) { el.className = "text-[9px] uppercase font-black p-2 mb-2 text-center eff-full"; el.innerText = `🚨 WAGEN VOLL (${count}/6) - ABHOLEN!`; }
-            else { el.className = "text-[9px] uppercase font-black p-2 mb-2 bg-slate-100 text-center"; el.innerText = `Wagen: ${count}/6 Körbe`; }
+            if(count >= 6) { el.className = "text-[10px] uppercase font-black p-3 mb-4 rounded-xl text-center bg-red-600 text-white animate-pulse"; el.innerText = `🚨 WAGEN VOLL (${count}/6) - ABHOLEN!`; }
+            else { el.className = "text-[10px] uppercase font-black p-3 mb-4 rounded-xl bg-slate-100 text-center text-slate-500 border border-slate-200 shadow-inner"; el.innerText = `Im Wagen: ${count}/6 Körbe`; }
         }
 
         function startBodenCheck() {
