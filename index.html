@@ -9,40 +9,39 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         body { font-family: 'Courier New', Courier, monospace; font-weight: bold; background-color: #f0f4f0; }
-        .forest-green { background-color: #1a3c34; }
         .urgent-alert { animation: pulse 2s infinite; }
         .dringend-alert { animation: pulse 0.8s infinite; border-left-color: #ef4444 !important; background-color: #fef2f2 !important; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
         .is-seen { animation: none !important; opacity: 0.6; background-color: #e2e8f0 !important; border-left-color: #94a3b8 !important; }
-        @keyframes blink-green { 0% { background-color: #fff; } 50% { background-color: #dcfce7; } 100% { background-color: #fff; } }
-        .timer-finished { animation: blink-green 1s infinite; border: 4px solid #1a3c34 !important; }
+        .timer-finished { background-color: #ef4444 !important; color: white !important; animation: pulse 1s infinite; border: 2px solid black !important; }
         input, select, button { font-family: 'Courier New', Courier, monospace; font-weight: bold; }
+        
+        /* Efficiency Colors */
+        .eff-wait { background-color: #facc15; color: black; }
+        .eff-go { background-color: #22c55e; color: white; }
+        .eff-opti { background-color: #16a34a; color: white; border: 2px solid #1a3c34; }
+        .eff-urgent { background-color: #dc2626; color: white; animation: pulse 0.5s infinite; }
     </style>
 </head>
 <body class="min-h-screen text-slate-900">
 
     <div id="loginScreen" class="fixed inset-0 bg-[#1a3c34] z-[100] flex items-center justify-center p-6">
         <div class="bg-white p-10 rounded-none shadow-2xl max-w-md w-full text-center border-b-[12px] border-[#1a3c34]">
-            <h1 class="text-3xl font-black mb-2 text-slate-900 uppercase">Aufbereitung</h1>
+            <h1 class="text-3xl font-black mb-2 text-slate-900 uppercase tracking-tighter">Aufbereitung</h1>
             <div class="space-y-4 text-left">
-                <label class="text-[10px] uppercase text-slate-400">Name:</label>
-                <input type="text" id="userName" placeholder="NAME EINGEBEN" class="w-full bg-slate-100 border-2 border-slate-200 p-4 rounded-none outline-none focus:border-[#1a3c34] mb-2">
-                
-                <label class="text-[10px] uppercase text-slate-400">Meine Workstation:</label>
-                <select id="userStation" class="w-full bg-slate-100 border-2 border-slate-200 p-4 rounded-none outline-none focus:border-[#1a3c34] mb-4">
+                <input type="text" id="userName" placeholder="NAME EINGEBEN" class="w-full bg-slate-100 border-2 border-slate-200 p-4 rounded-none outline-none focus:border-[#1a3c34]">
+                <select id="userStation" class="w-full bg-slate-100 border-2 border-slate-200 p-4 rounded-none outline-none focus:border-[#1a3c34]">
                     <option value="wks050">wks050</option><option value="wks051">wks051</option>
                     <option value="wks052">wks052</option><option value="wks053">wks053</option>
                     <option value="wks054">wks054</option><option value="wks055">wks055</option>
                     <option value="wks056">wks056</option><option value="wks057">wks057</option>
                     <option value="wks058">wks058</option><option value="wks059">wks059</option>
                 </select>
-
                 <div class="grid grid-cols-1 gap-2">
-                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs">Wäschedienst</span></label>
-                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkMull" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs">Müll-Dienst</span></label>
-                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkBoden" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs">Bodendienst</span></label>
+                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-black">Wäschedienst</span></label>
+                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkMull" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-black">Müll-Dienst</span></label>
                 </div>
-                <button onclick="doLogin()" class="w-full bg-[#1a3c34] text-white p-5 rounded-none uppercase hover:bg-black transition-all mt-4">Starten</button>
+                <button onclick="doLogin()" class="w-full bg-[#1a3c34] text-white p-5 rounded-none uppercase hover:bg-black transition-all font-black">Starten</button>
             </div>
         </div>
     </div>
@@ -79,31 +78,43 @@
         </header>
 
         <main class="max-w-7xl mx-auto p-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div id="weschePanel" class="bg-white p-8 border-t-8 border-[#1a3c34] hidden shadow-sm">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-lg uppercase">Wäsche Monitor</h2>
-                        <div class="flex flex-col items-end gap-2">
-                            <div id="timer-display" class="text-3xl bg-slate-100 px-4 py-2 text-[#1a3c34]">90:00</div>
-                            <button onclick="triggerSyncTimer()" class="bg-[#1a3c34] text-white px-4 py-2 text-[10px] uppercase hover:bg-black">Maschine Start ↻</button>
+            <div id="weschePanel" class="hidden mb-8">
+                <h2 class="text-xl uppercase font-black mb-4 border-b-4 border-[#1a3c34] inline-block">Wäschedienst Dashboard</h2>
+                
+                <div id="efficiency-status" class="mb-4 p-4 text-center text-xs uppercase font-black bg-slate-100 text-slate-400">
+                    Warten auf Anfragen...
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1 bg-white p-6 border-t-4 border-[#1a3c34] shadow-sm">
+                        <h3 class="text-sm uppercase mb-4 text-slate-400">Anfragen</h3>
+                        <div id="wescheList" class="space-y-4"></div>
+                    </div>
+                    <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-800">
+                        <div id="timer-box-1" class="bg-white p-6 border-t-4 border-slate-200 text-center shadow-sm">
+                            <p class="text-[10px] uppercase mb-2">Maschine 1</p>
+                            <div id="timer-val-1" class="text-3xl font-black mb-4">80:00</div>
+                            <button onclick="triggerTimer(1)" class="w-full bg-[#1a3c34] text-white py-2 text-[10px] uppercase hover:bg-black font-black">Start</button>
+                        </div>
+                        <div id="timer-box-2" class="bg-white p-6 border-t-4 border-slate-200 text-center shadow-sm">
+                            <p class="text-[10px] uppercase mb-2">Maschine 2</p>
+                            <div id="timer-val-2" class="text-3xl font-black mb-4">80:00</div>
+                            <button onclick="triggerTimer(2)" class="w-full bg-[#1a3c34] text-white py-2 text-[10px] uppercase hover:bg-black font-black">Start</button>
+                        </div>
+                        <div id="timer-box-3" class="bg-white p-6 border-t-4 border-slate-200 text-center shadow-sm">
+                            <p class="text-[10px] uppercase mb-2">Maschine 3</p>
+                            <div id="timer-val-3" class="text-3xl font-black mb-4">80:00</div>
+                            <button onclick="triggerTimer(3)" class="w-full bg-[#1a3c34] text-white py-2 text-[10px] uppercase hover:bg-black font-black">Start</button>
                         </div>
                     </div>
-                    <div id="wescheList" class="space-y-4"></div>
-                </div>
-                <div id="mullPanel" class="bg-white p-8 border-t-8 border-slate-800 hidden shadow-sm">
-                    <h2 class="text-lg uppercase mb-6">Müll Monitor</h2>
-                    <div id="mullList" class="space-y-4"></div>
                 </div>
             </div>
-        </main>
-    </div>
 
-    <div id="bodenModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[200]">
-        <div class="bg-white p-12 text-center max-w-lg border-b-[12px] border-[#1a3c34]">
-            <h2 class="text-3xl font-black mb-4 uppercase text-[#1a3c34]">Bodendienst</h2>
-            <p class="text-slate-500 mb-8 font-bold text-xl uppercase">Boden reinigen!</p>
-            <button onclick="closeBoden()" class="bg-[#1a3c34] text-white px-12 py-5 text-xl uppercase">Erledigt ✅</button>
-        </div>
+            <div id="mullPanel" class="bg-white p-8 border-t-8 border-slate-800 hidden shadow-sm max-w-2xl text-slate-800">
+                <h2 class="text-lg uppercase mb-6 font-black tracking-widest">Müll Monitor</h2>
+                <div id="mullList" class="space-y-4"></div>
+            </div>
+        </main>
     </div>
 
     <audio id="alarm-finished" src="https://actions.google.com/sounds/v1/alarms/alarm_clock_beep.ogg"></audio>
@@ -111,7 +122,7 @@
     <audio id="urgent-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
     <script>
-        const firebaseConfig = {
+       const firebaseConfig = {
   apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ",
   databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", 
   authDomain: "dienste-fluxs.firebaseapp.com",
@@ -123,66 +134,57 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        let userConfig = { name: "", station: "", wesche: false, mull: false, boden: false };
+        let userConfig = { name: "", station: "", wesche: false, mull: false };
         let firstLoad = { wesche: true, mull: true };
-        let localTimerInterval = null;
+        let activeIntervals = { 1: null, 2: null, 3: null };
 
         function doLogin() {
             const name = document.getElementById('userName').value;
             const station = document.getElementById('userStation').value;
             if(!name) return alert("NAME EINGEBEN!");
-            userConfig = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
-            
-            // Register as Online
+            userConfig = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked };
             const onlineRef = database.ref('online_users/' + name + '_' + station);
-            onlineRef.set({ name, station, wesche: userConfig.wesche, mull: userConfig.mull, boden: userConfig.boden });
+            onlineRef.set({ name, station, wesche: userConfig.wesche, mull: userConfig.mull });
             onlineRef.onDisconnect().remove();
-
             document.getElementById('displayUser').innerText = `USER: ${name} | ${station}`;
             document.getElementById('activeStationDisplay').innerText = station;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            
             if(userConfig.wesche) document.getElementById('weschePanel').classList.remove('hidden');
             if(userConfig.mull) document.getElementById('mullPanel').classList.remove('hidden');
-            
-            listenToTimer();
+            syncTimers();
             listenToOnlineUsers();
         }
 
-        // SYNC TIMER LOGIC
-        function triggerSyncTimer() {
-            const endTime = Date.now() + (90 * 60 * 1000);
-            database.ref('sync_timer').set({ endTime, startedBy: userConfig.name });
-            database.ref('ves_pozivi/SYSTEM').set({ 
-                station: "INFO", detail: "🔄 MASCHINE START", notiz: "Läuft für 90 min", 
-                urgent: false, sender: userConfig.name, 
-                time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
-            });
+        function triggerTimer(id) {
+            const endTime = Date.now() + (80 * 60 * 1000);
+            database.ref('timers/m' + id).set({ endTime, startedBy: userConfig.name });
         }
 
-        function listenToTimer() {
-            database.ref('sync_timer').on('value', (s) => {
-                const data = s.val();
-                if(!data) return;
-                if(localTimerInterval) clearInterval(localTimerInterval);
-                document.getElementById('weschePanel').classList.remove('timer-finished');
-
-                localTimerInterval = setInterval(() => {
-                    const now = Date.now();
-                    const diff = data.endTime - now;
-                    if(diff <= 0) {
-                        clearInterval(localTimerInterval);
-                        document.getElementById('timer-display').textContent = "FERTIG!";
-                        document.getElementById('weschePanel').classList.add('timer-finished');
-                        if(userConfig.wesche) document.getElementById('alarm-finished').play();
-                    } else {
-                        const totalSec = Math.floor(diff / 1000);
-                        const min = Math.floor(totalSec / 60);
-                        const sek = totalSec % 60;
-                        document.getElementById('timer-display').textContent = (min < 10 ? "0":"") + min + ":" + (sek < 10 ? "0":"") + sek;
-                    }
-                }, 1000);
+        function syncTimers() {
+            [1, 2, 3].forEach(id => {
+                database.ref('timers/m' + id).on('value', (s) => {
+                    const data = s.val();
+                    if(!data) return;
+                    if(activeIntervals[id]) clearInterval(activeIntervals[id]);
+                    const box = document.getElementById('timer-box-' + id);
+                    const display = document.getElementById('timer-val-' + id);
+                    box.classList.remove('timer-finished');
+                    activeIntervals[id] = setInterval(() => {
+                        const diff = data.endTime - Date.now();
+                        if(diff <= 0) {
+                            clearInterval(activeIntervals[id]);
+                            display.textContent = "FERTIG!";
+                            box.classList.add('timer-finished');
+                            if(userConfig.wesche) document.getElementById('alarm-finished').play();
+                        } else {
+                            const total = Math.floor(diff / 1000);
+                            const m = Math.floor(total / 60);
+                            const s = total % 60;
+                            display.textContent = (m < 10 ? "0":"") + m + ":" + (s < 10 ? "0":"") + s;
+                        }
+                    }, 1000);
+                });
             });
         }
 
@@ -192,19 +194,16 @@
                 list.innerHTML = '';
                 if(!s.val()) return;
                 Object.values(s.val()).forEach(u => {
-                    let roles = [];
-                    if(u.wesche) roles.push("Wäsche");
-                    if(u.mull) roles.push("Müll");
-                    if(u.boden) roles.push("Boden");
-                    list.innerHTML += `<div><span class="text-[#1a3c34] font-black">${u.name} (${u.station})</span>: ${roles.join(', ')}</div>`;
+                    let r = []; if(u.wesche) r.push("Wäsche"); if(u.mull) r.push("Müll");
+                    list.innerHTML += `<div><span class="text-[#1a3c34] font-black">${u.name}</span>: ${r.join(', ')}</div>`;
                 });
             });
         }
 
         function quickMull(type) {
             database.ref('mull_pozivi/' + userConfig.station).set({ 
-                station: userConfig.station, detail: type, notiz: "", urgent: false,
-                sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
+                station: userConfig.station, detail: type, notiz: "", sender: userConfig.name, 
+                time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
             });
         }
 
@@ -213,7 +212,7 @@
             const notiz = document.getElementById('userNotiz').value;
             const urgent = document.getElementById('isUrgent').checked;
             database.ref('ves_pozivi/' + userConfig.station).set({ 
-                station: userConfig.station, detail: type, notiz, urgent: urgent,
+                station: userConfig.station, detail: type, notiz, urgent,
                 sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
             });
             document.getElementById('isUrgent').checked = false;
@@ -225,10 +224,8 @@
 
         function handleNewData(snapshot, elementId, path, hasRole, typeKey) {
             if(!firstLoad[typeKey] && snapshot.val() && hasRole) {
-                let hasUrgent = false;
-                snapshot.forEach(child => { if(child.val().urgent && !child.val().seen) hasUrgent = true; });
-                if(hasUrgent) document.getElementById('urgent-sound').play();
-                else document.getElementById('notif-sound').play();
+                let u = false; snapshot.forEach(c => { if(c.val().urgent && !c.val().seen) u = true; });
+                if(u) document.getElementById('urgent-sound').play(); else document.getElementById('notif-sound').play();
             }
             firstLoad[typeKey] = false;
             renderList(snapshot, elementId, path, hasRole);
@@ -237,34 +234,52 @@
         function renderList(snapshot, elementId, path, hasRole) {
             const container = document.getElementById(elementId);
             if(!container || !hasRole) return;
+            
+            let basketCount = 0;
+            let hasUrgent = false;
             container.innerHTML = '';
+
             if(snapshot.val()) {
                 snapshot.forEach(child => {
                     const item = child.val();
-                    let statusClass = item.seen ? 'is-seen' : (item.urgent ? 'dringend-alert' : 'urgent-alert');
-                    container.innerHTML += `<div class="bg-slate-50 p-4 border-l-8 border-[#1a3c34] flex justify-between items-center ${statusClass}">
-                        <div><p class="text-[10px] text-[#1a3c34] uppercase font-black">${item.station} ${item.urgent ? '🔥 DRINGEND' : ''}</p>
-                        <p class="text-lg uppercase font-black">${item.detail}</p>
-                        ${item.notiz ? `<p class="text-xs bg-yellow-100 p-1 mt-1 border border-yellow-200">INFO: ${item.notiz}</p>` : ''}
-                        <p class="text-[8px] text-slate-400 mt-1 lowercase">${item.time} - Von: ${item.sender}</p></div>
-                        <div class="flex gap-1"><button onclick="markAsSeen('${path}', '${child.key}')" class="bg-slate-200 text-black p-3 hover:bg-slate-300">👁️</button>
-                        <button onclick="removeItem('${path}', '${child.key}')" class="bg-black text-white p-3 hover:bg-green-800">✔️</button></div></div>`;
+                    if (!item.seen && item.detail === "Wäschekorb voll") {
+                        basketCount++;
+                        if (item.urgent) hasUrgent = true;
+                    }
+                    let sc = item.seen ? 'is-seen' : (item.urgent ? 'dringend-alert' : 'urgent-alert');
+                    container.innerHTML += `<div class="bg-slate-50 p-3 border-l-4 border-[#1a3c34] flex justify-between items-center ${sc} text-[11px]">
+                        <div><p class="font-black uppercase">${item.station}</p><p class="uppercase">${item.detail}</p>
+                        <p class="text-[8px] text-slate-400 mt-1">${item.time}</p></div>
+                        <div class="flex gap-1"><button onclick="markAsSeen('${path}', '${child.key}')" class="bg-slate-200 p-2">👁️</button>
+                        <button onclick="removeItem('${path}', '${child.key}')" class="bg-black text-white p-2">✔️</button></div></div>`;
                 });
-            } else { container.innerHTML = '<p class="text-slate-300 italic text-xs uppercase">Warten...</p>'; }
+            } else { container.innerHTML = '<p class="text-slate-300 italic text-[10px] uppercase text-center">Keine Anfragen</p>'; }
+
+            if (elementId === 'wescheList') updateEfficiencyUI(basketCount, hasUrgent);
         }
 
-        function markAsSeen(path, id) { database.ref(path + '/' + id).update({ seen: true }); }
-        function removeItem(p, id) { database.ref(p + '/' + id).remove(); }
-
-        setInterval(() => {
-            const now = new Date();
-            const cet = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(now);
-            if(userConfig.boden && cet === "14:00") {
-                document.getElementById('bodenModal').classList.remove('hidden');
-                document.getElementById('alarm-finished').play();
+        function updateEfficiencyUI(count, urgent) {
+            const statusDiv = document.getElementById('efficiency-status');
+            if (urgent) {
+                statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-urgent';
+                statusDiv.innerText = '🚨 SOFORT LOS! (DRINGENDE ANFRAGE)';
+            } else if (count >= 9) {
+                statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-opti';
+                statusDiv.innerText = `🔥 OPTIMAL! (${count} KÖRBE) - ALLE 3 MASCHINEN VOLL`;
+            } else if (count >= 5) {
+                statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-go';
+                statusDiv.innerText = `✅ EINKAUFSWAGEN VOLL (${count} KÖRBE) - JETZT ABHOLEN`;
+            } else if (count > 0) {
+                statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-wait';
+                statusDiv.innerText = `⏳ WARTEN... (${count}/5 KÖRBE FÜR EINEN VOLLEN WAGEN)`;
+            } else {
+                statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black bg-slate-100 text-slate-400';
+                statusDiv.innerText = 'ALLE KÖRBE SIND LEER';
             }
-        }, 60000);
-        function closeBoden() { document.getElementById('bodenModal').classList.add('hidden'); }
+        }
+
+        function markAsSeen(p, id) { database.ref(p + '/' + id).update({ seen: true }); }
+        function removeItem(p, id) { database.ref(p + '/' + id).remove(); }
     </script>
 </body>
 </html>
