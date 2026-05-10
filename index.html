@@ -3,105 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aufbereitung-Dienst</title>
+    <title>AUFBEREITUNG | CONTROL 🤖</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
-        body { font-family: 'JetBrains Mono', monospace !important; background-color: #f4f7f4; }
-        .dringend-alert { animation: pulse 0.8s infinite; border-left: 8px solid #ef4444 !important; background-color: #fef2f2 !important; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-        .timer-finished { background-color: #ef4444 !important; color: white !important; border: 3px solid black !important; animation: blinkRed 1s infinite; }
-        @keyframes blinkRed { 0% { background-color: #ef4444; } 50% { background-color: #7f1d1d; } 100% { background-color: #ef4444; } }
-        .dark-green-gradient { background: linear-gradient(135deg, #1a3c34 0%, #0d211d 100%); }
-        .coach-msg { transition: all 0.5s ease; animation: slideIn 0.5s ease-out; }
-        @keyframes slideIn { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        button:disabled { background: #cbd5e1 !important; color: #94a3b8 !important; cursor: not-allowed !important; transform: none !important; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;800&display=swap');
+        
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --accent: #10b981;
+        }
+
+        body { 
+            font-family: 'JetBrains Mono', monospace !important; 
+            background-color: var(--bg); 
+            color: #f8fafc;
+            letter-spacing: -0.05em;
+        }
+
+        .dringend-alert { 
+            animation: danger 0.5s infinite; 
+            border: 4px solid #ef4444 !important;
+        }
+        @keyframes danger { 0% { background: #450a0a; } 50% { background: #7f1d1d; } 100% { background: #450a0a; } }
+
+        .timer-finished { 
+            background-color: #ef4444 !important; 
+            animation: blink 1s infinite;
+            color: white;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .btn-industrial {
+            clip-path: polygon(3% 0%, 100% 0%, 97% 100%, 0% 100%);
+            transition: all 0.2s ease;
+        }
+        .btn-industrial:active { transform: scale(0.95); }
     </style>
 </head>
-<body class="min-h-screen text-slate-900 pb-10">
+<body class="min-h-screen pb-10">
 
-    <div id="sendFeedback" class="hidden fixed bottom-10 left-1/2 -translate-x-1/2 bg-[#1a3c34] text-white px-8 py-4 rounded-full z-[300] font-black uppercase shadow-2xl border-2 border-white text-center"></div>
+    <div id="sendFeedback" class="hidden fixed top-5 left-1/2 -translate-x-1/2 bg-white text-black px-10 py-5 z-[300] font-extrabold uppercase border-4 border-black shadow-[8px_8px_0px_rgba(0,0,0,1)]"></div>
 
-    <div id="loginScreen" class="fixed inset-0 bg-[#1a3c34] z-[100] flex items-center justify-center p-6">
-        <div class="bg-white p-10 rounded-3xl shadow-2xl max-w-md w-full text-center border-b-[15px] border-emerald-900">
-            <h1 class="text-4xl font-extrabold mb-8 uppercase italic tracking-tighter text-slate-800">AUFBEREITUNG</h1>
-            <div class="space-y-4 text-left">
-                <input type="text" id="userName" placeholder="DEIN NAME" class="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-xl outline-none focus:border-[#1a3c34] font-bold uppercase text-sm">
-                <select id="userStation" class="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-xl font-bold uppercase cursor-pointer text-sm">
-                    <option value="wks050">wks050</option><option value="wks051">wks051</option><option value="wks052">wks052</option>
-                    <option value="wks053">wks053</option><option value="wks054">wks054</option><option value="wks055">wks055</option>
-                    <option value="wks056">wks056</option><option value="wks057">wks057</option><option value="wks058">wks058</option><option value="wks059">wks059</option>
+    <div id="loginScreen" class="fixed inset-0 bg-black z-[500] flex items-center justify-center p-4">
+        <div class="bg-[#1e293b] p-8 border-4 border-white w-full max-w-md shadow-[12px_12px_0px_#10b981]">
+            <h1 class="text-4xl font-extrabold mb-10 italic tracking-tighter border-b-4 border-white pb-4">START_SYSTEM 🖥️</h1>
+            <div class="space-y-6">
+                <input type="text" id="userName" placeholder="> NAME_👤" class="w-full bg-black border-2 border-slate-700 p-4 rounded-none outline-none focus:border-[#10b981] font-bold uppercase text-emerald-500">
+                <select id="userStation" class="w-full bg-black border-2 border-slate-700 p-4 rounded-none font-bold uppercase text-white outline-none">
+                    <option value="wks050">📍 wks050</option><option value="wks051">📍 wks051</option><option value="wks052">📍 wks052</option>
+                    <option value="wks053">📍 wks053</option><option value="wks054">📍 wks054</option><option value="wks055">📍 wks055</option>
+                    <option value="wks056">📍 wks056</option><option value="wks057">📍 wks057</option><option value="wks058">📍 wks058</option><option value="wks059">📍 wks059</option>
                 </select>
-                <div class="grid grid-cols-1 gap-3 mt-6">
-                    <label class="flex items-center p-4 bg-slate-50 border-2 border-slate-100 rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"><input type="checkbox" id="checkWesche" class="w-6 h-6 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-extrabold tracking-wider">Wäschedienst</span></label>
-                    <label class="flex items-center p-4 bg-slate-50 border-2 border-slate-100 rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"><input type="checkbox" id="checkMull" class="w-6 h-6 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-extrabold tracking-wider">Müll-Dienst</span></label>
-                    <label class="flex items-center p-4 bg-slate-50 border-2 border-slate-100 rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors"><input type="checkbox" id="checkBoden" class="w-6 h-6 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-extrabold tracking-wider">Bodendienst</span></label>
+                <div class="grid grid-cols-1 gap-2">
+                    <label class="flex items-center p-3 bg-black/50 border border-slate-800 cursor-pointer hover:border-emerald-500"><input type="checkbox" id="checkWesche" class="w-6 h-6 accent-emerald-500"><span class="ml-4 uppercase text-xs font-extrabold">🧺 Wäsche</span></label>
+                    <label class="flex items-center p-3 bg-black/50 border border-slate-800 cursor-pointer hover:border-emerald-500"><input type="checkbox" id="checkMull" class="w-6 h-6 accent-emerald-500"><span class="ml-4 uppercase text-xs font-extrabold">🗑️ Müll</span></label>
+                    <label class="flex items-center p-3 bg-black/50 border border-slate-800 cursor-pointer hover:border-emerald-500"><input type="checkbox" id="checkBoden" class="w-6 h-6 accent-emerald-500"><span class="ml-4 uppercase text-xs font-extrabold">🧹 Boden</span></label>
                 </div>
-                <button onclick="doLogin()" class="w-full dark-green-gradient text-white p-5 rounded-2xl uppercase font-black mt-6 shadow-xl text-2xl hover:scale-[1.02] transition-transform tracking-widest">START</button>
+                <button onclick="doLogin()" class="w-full bg-white text-black p-6 font-black text-2xl hover:bg-emerald-500 transition-colors uppercase btn-industrial">LOGIN 🔓</button>
             </div>
         </div>
     </div>
 
     <div id="mainApp" class="hidden">
-        <header class="bg-white/80 backdrop-blur-md border-b-4 border-[#1a3c34] p-4 sticky top-0 z-50 shadow-lg">
-            <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
+        <header class="border-b-4 border-white p-6 sticky top-0 bg-[#0f172a]/90 backdrop-blur-md z-50">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
                 <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 dark-green-gradient text-white flex items-center justify-center text-2xl font-black rounded-2xl shadow-lg">A</div>
-                    <div><h1 class="font-extrabold text-2xl uppercase italic tracking-tighter text-slate-800">AUFBEREITUNG</h1><p id="displayUser" class="text-[10px] text-emerald-700 font-black uppercase tracking-widest"></p></div>
+                    <div class="text-4xl font-black bg-white text-black px-4 py-1 shadow-[4px_4px_0px_#10b981]">A.B</div>
+                    <div><h1 class="font-black text-xl tracking-widest uppercase">CONTROL_SYS ⚡</h1><p id="displayUser" class="text-[10px] text-emerald-400 font-bold uppercase"></p></div>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 dark-green-gradient p-3 rounded-2xl shadow-2xl text-white">
-                    <span id="activeStationDisplay" class="bg-white px-4 py-2 text-[#1a3c34] text-xs font-black rounded-lg shadow-inner"></span>
-                    <button onclick="quickMull('Restmüll 🗑️')" class="bg-slate-700/50 px-3 py-2 text-[10px] uppercase font-black rounded-lg hover:bg-black transition-colors">Restmüll</button>
-                    <button onclick="quickMull('Papier 📄')" class="bg-blue-800/50 px-3 py-2 text-[10px] uppercase font-black rounded-lg hover:bg-blue-900 transition-colors">Papier</button>
-                    <button onclick="sendWash()" class="bg-white text-[#1a3c34] px-5 py-2 uppercase text-xs font-black italic rounded-lg hover:bg-emerald-50 shadow-md">🧺 KORB VOLL</button>
-                    <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-2 text-xs uppercase text-slate-900 w-28 font-bold rounded-lg outline-none">
-                    <label class="flex items-center text-[10px] uppercase font-black px-2 cursor-pointer"><input type="checkbox" id="isUrgent" class="mr-2 w-4 h-4 accent-red-500"> DRINGEND!</label>
+                
+                <div class="flex flex-wrap items-center gap-3 bg-slate-800 p-4 border-2 border-slate-600 shadow-xl">
+                    <span id="activeStationDisplay" class="bg-emerald-500 text-black px-3 py-1 text-xs font-black"></span>
+                    <button onclick="quickMull('Restmüll 🗑️')" class="border border-white/20 px-3 py-1 text-[10px] font-black uppercase hover:bg-white hover:text-black">MÜLL 🗑️</button>
+                    <button onclick="sendWash()" class="bg-emerald-500 text-black px-4 py-1 uppercase text-xs font-black shadow-[4px_4px_0px_rgba(255,255,255,1)]">🧺 KORB VOLL</button>
+                    <input type="text" id="userNotiz" placeholder="NOTIZ ✏️..." class="bg-black border border-slate-600 p-1 text-[10px] text-white w-24 outline-none">
+                    <label class="text-[10px] font-black px-2 cursor-pointer border border-red-500 text-red-500 flex items-center h-full uppercase"><input type="checkbox" id="isUrgent" class="mr-1"> 🚨 SOS</label>
                 </div>
-                <div id="liveStatus" class="bg-slate-100 p-3 text-[9px] uppercase border-2 border-slate-200 rounded-xl min-w-[200px] max-h-24 overflow-y-auto"><div id="statusList" class="space-y-1"></div></div>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-6">
-            <div id="weschePanel" class="hidden space-y-8">
-                <div id="notizMonitor" class="bg-yellow-100 border-4 border-yellow-400 p-5 rounded-2xl shadow-xl hidden"><div id="notizList" class="flex flex-wrap gap-3"></div></div>
+        <main class="max-w-7xl mx-auto p-4 md:p-10">
+            <div id="weschePanel" class="hidden space-y-10">
+                <div id="notizMonitor" class="hidden border-4 border-yellow-500 p-4 bg-yellow-500/10"><div id="notizList" class="flex flex-wrap gap-2"></div></div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    <div class="lg:col-span-2 bg-white p-6 rounded-3xl border-t-8 border-slate-300 shadow-md">
-                        <h3 class="text-xs uppercase font-black mb-6 tracking-widest text-slate-400 flex justify-between">OFFENE KÖRBE <span id="openCount" class="text-slate-800">0</span></h3>
-                        <div id="wescheList" class="space-y-3"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div class="lg:col-span-4 bg-slate-900/50 border-2 border-slate-800 p-6">
+                        <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-2">
+                            <h3 class="text-xs font-black uppercase text-slate-500 tracking-tighter">OFFEN 📋</h3>
+                            <span id="openCount" class="bg-white text-black px-3 font-black text-xl">0</span>
+                        </div>
+                        <div id="wescheList" class="space-y-2"></div>
                     </div>
 
-                    <div class="lg:col-span-1 bg-white p-6 rounded-3xl border-t-8 border-[#1a3c34] shadow-2xl relative flex flex-col">
-                        <h3 class="text-xs uppercase font-black mb-1 text-emerald-800 italic">Dein Wagen</h3>
-                        <div id="efficiency-status" class="coach-msg text-[10px] uppercase font-black p-4 mb-4 rounded-xl text-center border shadow-inner min-h-[60px] flex items-center justify-center">Lade Körbe ein...</div>
-                        
-                        <div id="myCartList" class="space-y-3 flex-grow"></div>
-                        <div class="mt-6 space-y-2">
-                            <button onclick="fillMyCart()" class="w-full bg-emerald-100 text-[#1a3c34] py-3 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-200 transition-all">Körbe einladen 🧺</button>
-                            <button id="btn-clear-cart" onclick="clearMyCartAuto()" class="w-full dark-green-gradient text-white py-4 rounded-xl text-xs uppercase font-extrabold hover:scale-95 transition-all shadow-lg">Wagen leeren & Start ✔️</button>
-                            <p id="lock-msg" class="text-[9px] text-red-500 font-bold uppercase text-center hidden italic">Keine Maschine frei!</p>
+                    <div class="lg:col-span-4 flex flex-col gap-4">
+                        <div id="efficiency-status" class="bg-white text-black p-6 text-center font-black uppercase text-xs border-4 border-emerald-500 shadow-[8px_8px_0px_rgba(16,185,129,0.3)] min-h-[100px] flex items-center justify-center">
+                            READY_TO_WORK ⚙️
+                        </div>
+                        <div class="bg-slate-800 border-2 border-white p-6 flex-grow">
+                            <h3 class="text-[10px] font-black uppercase text-emerald-400 mb-4 tracking-widest">// MEIN WAGEN 🛒</h3>
+                            <div id="myCartList" class="space-y-2 mb-6"></div>
+                            <div class="space-y-3">
+                                <button onclick="fillMyCart()" class="w-full border-2 border-white p-4 text-[10px] font-black uppercase hover:bg-white hover:text-black transition-all">EINLADEN 🧺 [+]</button>
+                                <button id="btn-clear-cart" onclick="clearMyCartAuto()" class="w-full bg-emerald-500 text-black py-6 font-black text-xl uppercase btn-industrial shadow-lg">START 🌀</button>
+                                <p id="lock-msg" class="text-[10px] text-red-500 font-black uppercase text-center hidden">! MASCHINEN BESETZT ⛔ !</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="lg:col-span-1 space-y-4">
-                        <h3 class="text-xs uppercase font-black text-slate-400 tracking-widest text-center italic">Maschinen-Status</h3>
-                        <div id="timer-box-1" class="bg-white p-4 rounded-2xl border-b-4 border-slate-200 shadow-md text-center"><p class="text-[9px] font-black uppercase text-slate-400">Maschine 1</p><div id="timer-val-1" class="text-2xl font-black my-2 tracking-tighter">BEREIT</div><div id="machine-actions-1"></div></div>
-                        <div id="timer-box-2" class="bg-white p-4 rounded-2xl border-b-4 border-slate-200 shadow-md text-center"><p class="text-[9px] font-black uppercase text-slate-400">Maschine 2</p><div id="timer-val-2" class="text-2xl font-black my-2 tracking-tighter">BEREIT</div><div id="machine-actions-2"></div></div>
-                        <div id="timer-box-3" class="bg-white p-4 rounded-2xl border-b-4 border-slate-200 shadow-md text-center"><p class="text-[9px] font-black uppercase text-slate-400">Maschine 3</p><div id="timer-val-3" class="text-2xl font-black my-2 tracking-tighter">BEREIT</div><div id="machine-actions-3"></div></div>
+                    <div class="lg:col-span-4 space-y-4">
+                        <h3 class="text-[10px] font-black text-slate-500 uppercase text-center mb-2 tracking-[0.3em]">PRODUKTION 🏭</h3>
+                        <div id="timer-box-1" class="bg-black border-2 border-slate-800 p-4 text-center">
+                            <p class="text-[9px] font-black text-slate-600 mb-1">UNIT_01 🌀</p><div id="timer-val-1" class="text-3xl font-black text-white italic">FREI ✨</div><div id="machine-actions-1" class="mt-2"></div>
+                        </div>
+                        <div id="timer-box-2" class="bg-black border-2 border-slate-800 p-4 text-center">
+                            <p class="text-[9px] font-black text-slate-600 mb-1">UNIT_02 🌀</p><div id="timer-val-2" class="text-3xl font-black text-white italic">FREI ✨</div><div id="machine-actions-2" class="mt-2"></div>
+                        </div>
+                        <div id="timer-box-3" class="bg-black border-2 border-slate-800 p-4 text-center">
+                            <p class="text-[9px] font-black text-slate-600 mb-1">UNIT_03 🌀</p><div id="timer-val-3" class="text-3xl font-black text-white italic">FREI ✨</div><div id="machine-actions-3" class="mt-2"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div id="mullPanel" class="hidden bg-white p-8 rounded-3xl border-l-[12px] border-slate-800 shadow-xl max-w-2xl"><div id="mullList" class="space-y-3"></div></div>
+            <div id="mullPanel" class="hidden max-w-xl mx-auto"><div id="mullList" class="space-y-2"></div></div>
         </main>
     </div>
 
-    <div id="bodenModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[200]">
-        <div class="bg-white p-16 text-center max-w-xl rounded-[40px] border-b-[20px] border-[#1a3c34] shadow-2xl">
-            <h2 class="text-5xl font-black mb-6 uppercase italic">BODENDIENST</h2>
-            <button onclick="closeBoden()" class="dark-green-gradient text-white px-16 py-6 rounded-2xl text-2xl font-black shadow-2xl">ERLEDIGT ✅</button>
+    <div id="bodenModal" class="fixed inset-0 bg-emerald-500 text-black flex items-center justify-center hidden z-[600] p-10 text-center">
+        <div>
+            <h2 class="text-7xl font-black mb-10 italic uppercase border-b-8 border-black">BODEN_DIENST 🧹</h2>
+            <button onclick="closeBoden()" class="bg-black text-white px-20 py-10 text-4xl font-black hover:scale-110 transition-transform uppercase">FERTIG ✅</button>
         </div>
     </div>
 
@@ -121,17 +155,15 @@
         let userConfig = { name: "", station: "", wesche: false, mull: false, boden: false };
         let activeIntervals = { 1: null, 2: null, 3: null };
         let currentCartCount = 0;
-        let stats = { wCount: 0, mCount: 0, bodenAktiv: false };
-        let lastStats = { wCount: 0, mCount: 0 };
 
         function doLogin() {
             const n = document.getElementById('userName').value;
             const s = document.getElementById('userStation').value;
-            if(!n) return alert("NAME?");
-            userConfig = { name: n, station: s, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
+            if(!n) return;
+            userConfig = { name: n.toUpperCase(), station: s, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
             const onlineRef = database.ref('online_users/' + n + '_' + s);
             onlineRef.set(userConfig); onlineRef.onDisconnect().remove();
-            document.getElementById('displayUser').innerText = `MA: ${n} | ${s}`;
+            document.getElementById('displayUser').innerText = `👤 ${n} // 📍 ${s}`;
             document.getElementById('activeStationDisplay').innerText = s;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
@@ -150,20 +182,21 @@
                     const val = document.getElementById('timer-val-' + id);
                     const act = document.getElementById('machine-actions-' + id);
                     if(activeIntervals[id]) clearInterval(activeIntervals[id]);
-                    box.className = "bg-white p-4 rounded-2xl border-b-4 border-slate-200 shadow-md text-center";
+                    box.className = "bg-black border-2 border-slate-800 p-4 text-center";
                     act.innerHTML = "";
-                    if(!d) { val.textContent = "BEREIT"; checkFreeMachines(); return; }
+                    if(!d) { val.textContent = "FREI ✨"; val.className="text-3xl font-black text-emerald-500 italic"; checkFreeMachines(); return; }
                     if(d.status === 'waschen') {
+                        val.className="text-3xl font-black text-white italic";
                         activeIntervals[id] = setInterval(() => {
                             const diff = d.endTime - Date.now();
-                            if(diff <= 0) { clearInterval(activeIntervals[id]); val.textContent = "WASCHEN FERTIG!"; box.classList.add('timer-finished');
-                            act.innerHTML = `<button onclick="moveToDryer(${id})" class="w-full bg-blue-600 text-white p-2 rounded-lg text-[9px] font-black uppercase animate-bounce">➔ Trockner</button>`;
+                            if(diff <= 0) { clearInterval(activeIntervals[id]); val.textContent = "FERTIG 🔔"; box.classList.add('timer-finished');
+                            act.innerHTML = `<button onclick="moveToDryer(${id})" class="w-full bg-white text-black p-2 font-black uppercase text-[10px]">TROCKNER 🔥 ></button>`;
                             } else { const t = Math.floor(diff/1000); const m = Math.floor(t/60); const sec = t%60; val.textContent = (m<10?"0":"")+m+":"+(sec<10?"0":"")+sec; }
                             checkFreeMachines();
                         }, 1000);
                     } else {
-                        box.classList.add('bg-blue-50', 'border-blue-300'); val.innerHTML = `<span class="text-blue-600">TROCKNEN</span>`;
-                        act.innerHTML = `<button onclick="finishMachine(${id})" class="w-full bg-emerald-600 text-white p-2 rounded-lg text-[9px] font-black uppercase">Lager ✔️</button>`;
+                        box.classList.add('border-emerald-500'); val.innerHTML = "TROCKNEN ☀️"; val.className="text-3xl font-black text-emerald-400";
+                        act.innerHTML = `<button onclick="finishMachine(${id})" class="w-full bg-emerald-500 text-black p-2 font-black uppercase text-[10px]">LAGER ✅</button>`;
                         checkFreeMachines();
                     }
                 });
@@ -174,30 +207,30 @@
             database.ref('timers').once('value', s => {
                 const t = s.val() || {};
                 let free = 0; for(let i=1; i<=3; i++) { if(!t['m'+i]) free++; }
-                updateCoachMessage(currentCartCount, free);
+                updateCoach(currentCartCount, free);
             });
         }
 
-        function updateCoachMessage(cart, free) {
+        function updateCoach(cart, free) {
             const el = document.getElementById('efficiency-status');
             const btn = document.getElementById('btn-clear-cart');
             const lock = document.getElementById('lock-msg');
-            let msg = "Wagen ist leer. Lade Körbe ein!";
-            let style = "bg-slate-50 text-slate-400 border-slate-200";
+            let msg = "WAGEN LEER. BITTE SAMMELN! 🧺";
+            let style = "bg-slate-800 text-slate-500 border-slate-700";
 
-            if (cart > 0 && cart < 3) { msg = `Wagen füllt sich (${cart}/6)...`; style = "bg-emerald-50 text-emerald-700 border-emerald-200 font-bold"; }
+            if (cart > 0 && cart < 3) { msg = `STATUS: ${cart}/6 KÖRBEN 🛒. WEITER SAMMELN!`; style="bg-slate-800 text-white border-white";}
             else if (cart >= 3 && cart < 6) {
-                if (free >= 1) { msg = `Klasse! ${cart} Körbe gesammelt – du könntest jetzt schon eine Maschine starten! 🌀`; style = "bg-blue-50 text-blue-800 border-blue-200 font-black animate-pulse"; }
-                else { msg = `${cart} Körbe bereit. Maschinen sind aber noch voll.`; style = "bg-yellow-50 text-yellow-700 border-yellow-200"; }
+                if (free >= 1) { msg = `KLASSE! 👍 ${cart} KÖRBE BEREIT. EINE MASCHINE KANN GESTARTET WERDEN! 🌀`; style="bg-emerald-900 text-emerald-400 border-emerald-500 animate-pulse";}
+                else { msg = `STAU! 🛑 ${cart} KÖRBE WARTEN. MASCHINEN BESETZT!`; style="bg-red-900 text-red-400 border-red-500";}
             }
             else if (cart >= 6) {
-                if (free >= 2) { msg = `Spitze! Dein Wagen ist voll und 2 Maschinen warten auf dich! Ab geht's! 🚀🏆`; style = "bg-emerald-600 text-white border-white font-black shadow-xl scale-105"; }
-                else if (free === 1) { msg = `Wagen ist voll! Eine Maschine ist bereit für dich! 🏃💨`; style = "bg-emerald-500 text-white border-white font-black"; }
-                else { msg = `Wagen ist voll! Aber die Maschinen brauchen noch kurz. Verschnaufpause! ☕`; style = "bg-red-50 text-red-600 border-red-200 font-black"; }
+                if (free >= 2) { msg = "SPITZE! 🏆 WAGEN VOLL & 2 MASCHINEN FREI! AB GEHT'S! 🚀"; style="bg-emerald-500 text-black border-white shadow-[0_0_20px_#10b981]";}
+                else if (free === 1) { msg = "WAGEN VOLL! 🛒 EINE MASCHINE FREI. STARTEN! 🌀"; style="bg-white text-black border-black";}
+                else { msg = "WAGEN VOLL! 🛒 ABER KEINE MASCHINE FREI. KURZE PAUSE! ☕"; style="bg-red-500 text-black border-black";}
             }
 
-            el.innerText = msg; el.className = `coach-msg text-[10px] uppercase font-black p-4 mb-4 rounded-xl text-center border shadow-inner min-h-[60px] flex items-center justify-center ${style}`;
-            btn.disabled = (free === 0 || cart === 0);
+            el.innerText = msg; el.className = `p-6 text-center font-black uppercase text-xs border-4 flex items-center justify-center min-h-[100px] ${style}`;
+            btn.disabled = (free === 0 || cart < 3);
             lock.classList.toggle('hidden', free > 0);
         }
 
@@ -214,11 +247,10 @@
 
         function moveToDryer(id) { database.ref('timers/m'+id).update({ status: 'trocknen' }); }
         function finishMachine(id) { database.ref('timers/m'+id).remove(); }
-        function showFeedback(txt) { const fb = document.getElementById('sendFeedback'); fb.innerText = txt; fb.classList.remove('hidden'); setTimeout(() => fb.classList.add('hidden'), 2500); }
+        function showFeedback(txt) { const fb = document.getElementById('sendFeedback'); fb.innerText = txt; fb.classList.remove('hidden'); setTimeout(() => fb.classList.add('hidden'), 2000); }
         function fillMyCart() { database.ref('ves_pozivi').once('value', s => { let c=0; s.forEach(x => { if(x.val().seenBy === userConfig.name) c++; }); s.forEach(x => { if(!x.val().seenBy && c<6) { database.ref('ves_pozivi/'+x.key).update({seenBy:userConfig.name}); c++; } }); }); }
-        function sendWash() { const n = document.getElementById('userNotiz').value; const u = document.getElementById('isUrgent').checked; database.ref('ves_pozivi/'+Date.now()).set({ station: userConfig.station, notiz: n, urgent: u, sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), seenBy: "" }); document.getElementById('isUrgent').checked=false; document.getElementById('userNotiz').value=""; showFeedback("GESENDET! ✅"); }
+        function sendWash() { const n = document.getElementById('userNotiz').value; const u = document.getElementById('isUrgent').checked; database.ref('ves_pozivi/'+Date.now()).set({ station: userConfig.station, notiz: n, urgent: u, sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), seenBy: "" }); document.getElementById('isUrgent').checked=false; document.getElementById('userNotiz').value=""; showFeedback("GESENDET! 📡"); }
         function quickMull(t) { database.ref('mull_pozivi/'+Date.now()).set({ station: userConfig.station, detail: t, sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), seen: false }); }
-        function updateTabNotification() { let l = ""; const w = userConfig.wesche && stats.wCount > lastStats.wCount; const m = userConfig.mull && stats.mCount > lastStats.mCount; if(w||m) l="!! NEU !!"; else if(stats.bodenAktiv) l="!! BODEN !!"; if(l!=="") { document.title=l; new Audio('https://actions.google.com/sounds/v1/alerts/minimal_effects_bell_ring.ogg').play().catch(()=>{}); } else { document.title="Aufbereitung-Dienst"; } }
 
         database.ref('ves_pozivi/').on('value', (s) => {
             const ml = document.getElementById('wescheList'); const mc = document.getElementById('myCartList');
@@ -227,23 +259,21 @@
             let cart=0; let open=0; let hasN=false;
             s.forEach(c => {
                 const i = c.val(); const k = c.key;
-                if(i.notiz && (!i.seenBy || i.seenBy === userConfig.name)) { hasN=true; nl.innerHTML += `<div class="bg-white border-2 border-yellow-500 px-3 py-1 rounded-xl text-[9px] font-black uppercase">${i.station}: ${i.notiz}</div>`; }
-                const card = `<div class="bg-slate-50 p-3 rounded-2xl border-l-4 border-[#1a3c34] flex justify-between items-center ${i.urgent && !i.seenBy ? 'dringend-alert' : ''}"><div><p class="font-black text-xs">${i.station}</p></div><div class="flex gap-2">${!i.seenBy ? `<button onclick="database.ref('ves_pozivi/${k}').update({seenBy:userConfig.name})" class="bg-emerald-100 text-emerald-900 px-3 py-2 rounded-xl font-black text-[9px]">HOLEN</button>` : `<button onclick="database.ref('ves_pozivi/${k}').remove()" class="bg-slate-200 px-3 py-2 rounded-xl text-[9px] font-black">X</button>`}</div></div>`;
+                if(i.notiz && (!i.seenBy || i.seenBy === userConfig.name)) { hasN=true; nl.innerHTML += `<div class="bg-black text-yellow-500 border border-yellow-500 px-3 py-1 font-black text-[10px] uppercase">⚠️ ${i.station}: ${i.notiz}</div>`; }
+                const card = `<div class="bg-black/40 border border-slate-700 p-3 flex justify-between items-center ${i.urgent && !i.seenBy ? 'dringend-alert' : ''}"><div class="font-black text-xs uppercase text-white">📍 ${i.station}</div><div class="flex gap-2">${!i.seenBy ? `<button onclick="database.ref('ves_pozivi/${k}').update({seenBy:userConfig.name})" class="bg-white text-black px-4 py-1 font-black text-[10px] uppercase">HOLEN 🧺</button>` : `<button onclick="database.ref('ves_pozivi/${k}').remove()" class="text-red-500 px-2 font-black">X</button>`}</div></div>`;
                 if(!i.seenBy) { ml.innerHTML += card; open++; } else if(i.seenBy === userConfig.name) { mc.innerHTML += card; cart++; }
             });
-            stats.wCount=open; updateTabNotification(); lastStats.wCount=open;
             document.getElementById('openCount').innerText=open; currentCartCount=cart; nm.classList.toggle('hidden', !hasN); checkFreeMachines();
         });
 
         database.ref('mull_pozivi/').on('value', (s) => {
-            const l = document.getElementById('mullList'); l.innerHTML=''; let count=0;
-            s.forEach(c => { count++; l.innerHTML += `<div class="bg-slate-50 p-4 rounded-2xl border-l-8 border-slate-800 flex justify-between items-center shadow-md"><div><p class="font-black text-sm uppercase">${c.val().station}</p><p class="text-[10px] font-bold text-slate-400 italic">${c.val().detail}</p></div><button onclick="database.ref('mull_pozivi/${c.key}').remove()" class="bg-black text-white px-5 py-3 rounded-xl text-[10px] font-black">OK ✔️</button></div>`; });
-            stats.mCount=count; updateTabNotification(); lastStats.mCount=count;
+            const l = document.getElementById('mullList'); l.innerHTML='';
+            s.forEach(c => { l.innerHTML += `<div class="bg-slate-800 border-2 border-white p-4 flex justify-between items-center"><div class="font-black text-white uppercase">📍 ${c.val().station}<br><span class="text-[10px] text-slate-400 italic">${c.val().detail}</span></div><button onclick="database.ref('mull_pozivi/${c.key}').remove()" class="bg-white text-black px-6 py-2 font-black uppercase">ERLEDIGT ✅</button></div>`; });
         });
 
-        function listenToOnlineUsers() { database.ref('online_users').on('value', (s) => { const l = document.getElementById('statusList'); l.innerHTML=''; if(!s.val()) return; Object.values(s.val()).forEach(u => { l.innerHTML += `<div class="flex justify-between text-[8px] font-bold border-b pb-1"><span>${u.name} (${u.station})</span> <span class="text-emerald-600">online</span></div>`; }); }); }
-        function startBodenCheck() { setInterval(() => { const t = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date()); if(t === "14:00") { document.getElementById('bodenModal').classList.remove('hidden'); stats.bodenAktiv = true; updateTabNotification(); } }, 60000); }
-        function closeBoden() { document.getElementById('bodenModal').classList.add('hidden'); stats.bodenAktiv = false; updateTabNotification(); }
+        function listenToOnlineUsers() { database.ref('online_users').on('value', (s) => { const l = document.getElementById('statusList'); if(!l) return; l.innerHTML=''; if(!s.val()) return; Object.values(s.val()).forEach(u => { l.innerHTML += `<div class="text-[8px] font-black uppercase border-b border-slate-800 text-slate-500">${u.name} online</div>`; }); }); }
+        function startBodenCheck() { setInterval(() => { const t = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date()); if(t === "14:00") { document.getElementById('bodenModal').classList.remove('hidden'); } }, 60000); }
+        function closeBoden() { document.getElementById('bodenModal').classList.add('hidden'); }
         function startResetCheck() { setInterval(() => { const t = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date()); if(t === "20:00") { database.ref('ves_pozivi').remove(); database.ref('mull_pozivi').remove(); database.ref('timers').remove(); } }, 60000); }
     </script>
 </body>
