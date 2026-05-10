@@ -9,29 +9,26 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
-        :root { --waldgruen: #1a2f23; --dunkelgruen: #0f1a14; --hellgruen: #4ade80; --beige: #f5f5dc; }
-        body { font-family: 'JetBrains Mono', monospace; background-color: var(--dunkelgruen); color: var(--beige); }
+        :root { --waldgruen: #1a2f23; --dunkelgruen: #0f1a14; --hellgruen: #4ade80; --beige: #f5f5dc; --warn-gelb: #facc15; }
+        body { font-family: 'JetBrains Mono', monospace; background-color: var(--dunkelgruen); color: var(--beige); overflow-x: hidden; }
         .border-subtle { border-color: rgba(245, 245, 220, 0.1); }
         .btn-minimal { background-color: var(--beige); color: var(--dunkelgruen); text-transform: uppercase; font-weight: 700; transition: all 0.2s; }
         .btn-minimal:hover { background-color: var(--hellgruen); }
-        .btn-minimal:disabled { background-color: #2d3a33; color: #555; cursor: not-allowed; }
+        .btn-minimal:disabled { background-color: #2d3a33; color: #555; cursor: not-allowed; opacity: 0.5; }
         .card-dark { background-color: var(--waldgruen); border: 1px solid rgba(245, 245, 220, 0.1); }
-        .sos-alert { animation: pulse-border 1s infinite; border: 2px solid #ef4444 !important; }
+        .sos-alert { animation: pulse-border 0.5s infinite; border: 2px solid #ef4444 !important; }
         @keyframes pulse-border { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .timer-done { background-color: #7f1d1d !important; color: white; }
+        .notiz-highlight { background-color: var(--warn-gelb); color: black; font-weight: bold; }
         input, select { background: rgba(0,0,0,0.3) !important; border: 1px solid rgba(245, 245, 220, 0.2) !important; color: var(--beige) !important; }
     </style>
 </head>
 <body class="min-h-screen">
 
-    <div id="loginScreen" class="fixed inset-0 bg-[#0f1a14] z-[500] flex items-center justify-center p-4">
+    <div id="loginScreen" class="fixed inset-0 bg-[#0f1a14] z-[600] flex items-center justify-center p-4">
         <div class="w-full max-w-md p-8 border border-subtle bg-[#1a2f23]">
-            <div class="mb-10 text-center">
-                <h1 class="text-2xl font-bold tracking-widest uppercase">REFURB_HUB</h1>
-                <p class="text-[10px] opacity-50 uppercase tracking-[0.5em]">Mitarbeiter Terminal</p>
-            </div>
+            <h1 class="text-2xl font-bold tracking-widest uppercase mb-10 text-center">REFURB_HUB</h1>
             <div class="space-y-4">
-                <input type="text" id="userName" placeholder="NAME" class="w-full p-4 outline-none focus:border-hellgruen uppercase">
+                <input type="text" id="userName" placeholder="NAME" class="w-full p-4 outline-none uppercase">
                 <select id="userStation" class="w-full p-4 outline-none">
                     <option value="WKS050">STATION WKS050</option>
                     <option value="WKS051">STATION WKS051</option>
@@ -45,9 +42,8 @@
                     <option value="WKS059">STATION WKS059</option>
                 </select>
                 <div class="py-4 space-y-3">
-                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-4 h-4 accent-hellgruen"> <span class="text-xs uppercase">🧺 Wäsche-Dienst</span></label>
-                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkMull" class="w-4 h-4 accent-hellgruen"> <span class="text-xs uppercase">🗑️ Müll-Dienst</span></label>
-                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkBoden" class="w-4 h-4 accent-hellgruen"> <span class="text-xs uppercase">🧹 Boden-Dienst</span></label>
+                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-4 h-4"> <span class="text-xs uppercase">🧺 Wäsche-Dienst</span></label>
+                    <label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" id="checkMull" class="w-4 h-4"> <span class="text-xs uppercase">🗑️ Müll-Dienst</span></label>
                 </div>
                 <button onclick="doLogin()" class="w-full btn-minimal p-5 text-sm tracking-widest">System Starten</button>
             </div>
@@ -55,151 +51,169 @@
     </div>
 
     <div id="mainApp" class="hidden">
-        <header class="border-b border-subtle p-6 sticky top-0 bg-[#0f1a14]/95 backdrop-blur-sm z-50">
-            <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-6">
-                <div class="flex items-center gap-6">
-                    <div class="text-2xl font-bold border border-beige px-3 py-1">R</div>
-                    <div><h1 class="text-sm font-bold tracking-tighter uppercase">Refurb Operations</h1><p id="displayUser" class="text-[9px] text-hellgruen uppercase tracking-widest"></p></div>
+        <header class="border-b border-subtle p-4 sticky top-0 bg-[#0f1a14]/95 backdrop-blur-sm z-50">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="text-xl font-bold border border-beige px-2 uppercase">R</div>
+                    <div>
+                        <p id="displayUser" class="text-[10px] text-hellgruen uppercase font-bold"></p>
+                        <div id="quickMachineStatus" class="flex gap-2 mt-1">
+                            <span id="m1-badge" class="text-[8px] px-2 border border-subtle uppercase">M1: ...</span>
+                            <span id="m2-badge" class="text-[8px] px-2 border border-subtle uppercase">M2: ...</span>
+                            <span id="m3-badge" class="text-[8px] px-2 border border-subtle uppercase">M3: ...</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex flex-wrap items-center gap-4">
-                    <div id="statusList" class="text-[9px] text-stone-500 uppercase flex gap-3 italic border-r border-subtle pr-4"></div>
-                    <button onclick="quickMull('Restmüll 🗑️')" class="text-[10px] border border-beige/30 px-3 py-2 hover:bg-beige hover:text-dunkelgruen uppercase">🗑️ Müll</button>
-                    <button onclick="sendWash()" class="bg-hellgruen text-dunkelgruen px-4 py-2 text-[10px] font-bold uppercase hover:opacity-80">🧺 Korb Senden</button>
-                    <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-2 text-[10px] w-32 outline-none uppercase">
-                    <label class="text-[10px] flex items-center gap-2 cursor-pointer border border-red-900 px-2 py-2 text-red-500 font-bold uppercase"><input type="checkbox" id="isUrgent">🚨 SOS</label>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="quickMull('Müll 🗑️')" class="text-[10px] border border-beige/30 px-3 py-1 uppercase">🗑️ Müll</button>
+                    <button onclick="sendWash()" class="bg-hellgruen text-dunkelgruen px-4 py-1 text-[10px] font-bold uppercase">🧺 Korb Voll</button>
+                    <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-1 text-[10px] w-24 uppercase bg-transparent border border-subtle">
+                    <label class="text-[10px] text-red-500 font-bold uppercase flex items-center gap-1 border border-red-900 px-2 py-1 cursor-pointer"><input type="checkbox" id="isUrgent"> SOS</label>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-4 lg:p-10">
-            <div id="weschePanel" class="hidden space-y-10">
-                <div id="notizMonitor" class="hidden border border-hellgruen/30 p-4 bg-hellgruen/5"><div id="notizList" class="flex flex-wrap gap-2"></div></div>
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <div class="lg:col-span-3 card-dark p-6"><h3 class="text-[10px] uppercase tracking-widest opacity-40 mb-6 border-b border-subtle pb-2">Offene Abholungen</h3><div id="wescheList" class="space-y-3"></div></div>
-                    <div class="lg:col-span-6 flex flex-col gap-6">
-                        <div id="efficiency-status" class="card-dark p-8 text-center text-xs uppercase tracking-widest border-l-4 border-hellgruen italic">Prüfe Systemstatus...</div>
-                        <div class="card-dark p-6 border-t-2 border-beige">
-                            <h3 class="text-[10px] uppercase opacity-40 mb-4 tracking-widest">Sammelwagen 🛒</h3>
-                            <div id="myCartList" class="space-y-2 mb-8"></div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <button onclick="fillMyCart()" class="border border-beige text-[10px] p-4 hover:bg-beige hover:text-dunkelgruen uppercase">Wagen Beladen</button>
-                                <button id="btn-clear-cart" onclick="clearMyCartAuto()" class="btn-minimal p-4 text-xs">Waschgang Starten</button>
-                            </div>
-                            <p id="lock-msg" class="text-[9px] text-red-400 text-center mt-4 uppercase hidden font-bold">Aktion gesperrt: 2 freie Maschinen benötigt!</p>
-                        </div>
+        <div id="auto-notify" class="max-w-7xl mx-auto px-4 mt-4 hidden">
+            <div id="notify-box" class="p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2">
+                <div class="flex flex-col">
+                    <span id="notify-msg" class="text-sm font-black uppercase italic"></span>
+                    <span id="notify-sub" class="text-[10px] uppercase font-bold opacity-70"></span>
+                </div>
+                <button id="btn-rundgang" onclick="startRundgang()" class="btn-minimal px-8 py-3 text-xs">Rundgang Starten 🏃‍♂️</button>
+            </div>
+        </div>
+
+        <main class="max-w-7xl mx-auto p-4 md:p-8">
+            <div id="weschePanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-8 space-y-6">
+                    <div id="notizMonitor" class="hidden card-dark p-4 border-warn-gelb border-2">
+                        <div id="notizList" class="flex flex-wrap gap-2"></div>
                     </div>
-                    <div class="lg:col-span-3 space-y-4">
-                        <h3 class="text-[10px] uppercase opacity-40 text-center tracking-widest mb-4">Maschinen Status</h3>
-                        <div id="timer-box-1" class="card-dark p-6 text-center"><p class="text-[9px] opacity-30 mb-2 italic">WASCHMASCHINE 1</p><div id="timer-val-1" class="text-3xl font-bold">FREI</div><div id="machine-actions-1" class="mt-4 space-y-2"></div></div>
-                        <div id="timer-box-2" class="card-dark p-6 text-center"><p class="text-[9px] opacity-30 mb-2 italic">WASCHMASCHINE 2</p><div id="timer-val-2" class="text-3xl font-bold">FREI</div><div id="machine-actions-2" class="mt-4 space-y-2"></div></div>
-                        <div id="timer-box-3" class="card-dark p-6 text-center"><p class="text-[9px] opacity-30 mb-2 italic">WASCHMASCHINE 3</p><div id="timer-val-3" class="text-3xl font-bold">FREI</div><div id="machine-actions-3" class="mt-4 space-y-2"></div></div>
+                    <div class="card-dark p-6">
+                        <h3 class="text-[10px] uppercase opacity-40 mb-4 tracking-widest border-b border-subtle pb-2">Warteschlange Abholung</h3>
+                        <div id="wescheList" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
                     </div>
                 </div>
+
+                <div class="lg:col-span-4 space-y-4">
+                    <h3 class="text-[10px] uppercase opacity-40 text-center tracking-widest italic">Maschinen-Raum</h3>
+                    <div id="m-ui-1" class="card-dark p-4 border-l-4"></div>
+                    <div id="m-ui-2" class="card-dark p-4 border-l-4"></div>
+                    <div id="m-ui-3" class="card-dark p-4 border-l-4"></div>
+                </div>
             </div>
-            <div id="mullPanel" class="hidden max-w-xl mx-auto"><div id="mullList" class="space-y-3"></div></div>
+
+            <div id="mullPanel" class="hidden max-w-2xl mx-auto space-y-3 mt-10"></div>
         </main>
     </div>
-
-    <div id="bodenModal" class="fixed inset-0 bg-dunkelgruen/95 flex items-center justify-center hidden z-[600] p-10"><div class="card-dark p-12 text-center border-hellgruen border-2"><h2 class="text-4xl font-bold mb-8 uppercase italic">Bodendienst 🧹</h2><button onclick="closeBoden()" class="btn-minimal px-12 py-6 text-lg uppercase">Erledigt</button></div></div>
 
     <script>
         const firebaseConfig = { apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ", databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", authDomain: "dienste-fluxs.firebaseapp.com", projectId: "dienste-fluxs", storageBucket: "dienste-fluxs.firebasestorage.app", messagingSenderId: "137594684055", appId: "1:137594684055:web:2e2ddc1ed5ce8ff8f6dfd2" };
         firebase.initializeApp(firebaseConfig); const database = firebase.database();
-        let userConfig = { name: "", station: "", wesche: false, mull: false, boden: false };
-        let activeIntervals = { 1: null, 2: null, 3: null };
-        let lastWescheCount = 0; let currentCartCount = 0;
+        let userConfig = { name: "", station: "", wesche: false };
+        let currentCount = 0; let freeMachines = 0; let activeIntervals = {};
 
         function doLogin() {
             const n = document.getElementById('userName').value; const s = document.getElementById('userStation').value; if(!n) return;
-            userConfig = { name: n.toUpperCase(), station: s, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
-            const onlineRef = database.ref('online_users/' + n + '_' + s); onlineRef.set(userConfig); onlineRef.onDisconnect().remove();
-            document.getElementById('displayUser').innerText = `${n} | ${s}`; document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden');
+            userConfig = { name: n.toUpperCase(), station: s, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked };
+            document.getElementById('displayUser').innerText = `${userConfig.name} | ${userConfig.station}`;
+            document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden');
             if(userConfig.wesche) document.getElementById('weschePanel').classList.remove('hidden');
             if(userConfig.mull) document.getElementById('mullPanel').classList.remove('hidden');
-            syncTimers(); listenToOnlineUsers(); if(userConfig.boden) startBodenCheck(); startResetCheck();
+            syncApp();
         }
 
-        function updateTabNotification(openW) {
-            const hasUrgent = document.querySelector('.sos-alert') !== null;
-            if (hasUrgent) { document.title = "🚨 SOS WÄSCHE!"; }
-            else if (openW > lastWescheCount) { document.title = "🧺 NEUE ABHOLUNG"; }
-            else { document.title = "REFURB-DIENSTE"; }
-        }
-
-        function syncTimers() {
+        function syncApp() {
+            // Maschinenüberwachung
             [1, 2, 3].forEach(id => {
-                database.ref('timers/m' + id).on('value', (s) => {
-                    const d = s.val(); const box = document.getElementById('timer-box-' + id); const val = document.getElementById('timer-val-' + id); const act = document.getElementById('machine-actions-' + id);
-                    if(activeIntervals[id]) clearInterval(activeIntervals[id]); act.innerHTML = "";
-                    if(!d) { val.textContent = "FREI"; val.className="text-3xl font-bold text-hellgruen"; checkFreeMachines(); return; }
-                    const stopBtn = `<button onclick="finishMachine(${id})" class="w-full text-[8px] opacity-30 hover:opacity-100 uppercase mt-4 underline">Manuell Stoppen ×</button>`;
-                    if(d.status === 'waschen') {
-                        val.className="text-3xl font-bold text-beige italic";
+                database.ref('timers/m'+id).on('value', s => {
+                    const d = s.val(); const ui = document.getElementById('m-ui-'+id); const badge = document.getElementById('m'+id+'-badge');
+                    if(activeIntervals[id]) clearInterval(activeIntervals[id]);
+                    if(!d) {
+                        ui.className = "card-dark p-4 border-l-4 border-hellgruen";
+                        ui.innerHTML = `<div class="flex justify-between font-bold text-[10px]"><span class="opacity-50 uppercase">Maschine ${id}</span><span class="text-hellgruen">BEREIT</span></div>
+                                        <button onclick="startMachine(${id})" class="btn-minimal w-full mt-3 py-1 text-[9px]">Beladen & Start</button>`;
+                        badge.className = "text-[8px] px-2 border border-hellgruen text-hellgruen"; badge.innerText = `M${id}: OK`;
+                    } else {
+                        ui.className = "card-dark p-4 border-l-4 border-white/20";
                         activeIntervals[id] = setInterval(() => {
                             const diff = d.endTime - Date.now();
-                            if(diff <= 0) { clearInterval(activeIntervals[id]); val.textContent = "FERTIG"; box.classList.add('timer-done'); act.innerHTML = `<button onclick="moveToDryer(${id})" class="btn-minimal w-full p-2 text-[10px]">In Trockner 🔥</button>${stopBtn}`;
-                            } else { const t = Math.floor(diff/1000); const m = Math.floor(t/60); const sec = t%60; val.textContent = (m<10?"0":"")+m+":"+(sec<10?"0":"")+sec; act.innerHTML = stopBtn; }
-                            checkFreeMachines();
+                            if(diff <= 0) {
+                                ui.innerHTML = `<div class="flex justify-between font-bold text-[10px] text-red-500"><span>M${id} FERTIG</span><span>00:00</span></div>
+                                                <button onclick="finishMachine(${id})" class="btn-minimal w-full mt-3 py-1 text-[9px]">Entleeren</button>`;
+                            } else {
+                                const m = Math.floor(diff/60000); const sec = Math.floor((diff%60000)/1000);
+                                ui.innerHTML = `<div class="flex justify-between font-bold text-[10px] opacity-70"><span>M${id} LÄUFT</span><span>${m}:${sec<10?'0':''}${sec}</span></div>
+                                                <button onclick="finishMachine(${id})" class="text-[8px] mt-2 underline opacity-30 w-full">Abbruch</button>`;
+                            }
                         }, 1000);
-                    } else {
-                        val.innerHTML = "TROCKNEN"; val.className="text-3xl font-bold text-beige";
-                        act.innerHTML = `<button onclick="finishMachine(${id})" class="btn-minimal w-full p-2 text-[10px]">Entnommen / Lager</button>${stopBtn}`; checkFreeMachines();
+                        badge.className = "text-[8px] px-2 border border-white/10 opacity-40"; badge.innerText = `M${id}: BUSY`;
                     }
+                    updateGlobalState();
                 });
             });
-        }
 
-        function checkFreeMachines() {
-            database.ref('timers').once('value', s => {
-                const t = s.val() || {}; let free = 0; for(let i=1; i<=3; i++) { if(!t['m'+i]) free++; }
-                updateCoach(currentCartCount, free);
+            // Abholungsüberwachung
+            database.ref('ves_pozivi').on('value', s => {
+                const list = document.getElementById('wescheList'); const nl = document.getElementById('notizList');
+                list.innerHTML = ''; nl.innerHTML = ''; currentCount = 0; let hasNotiz = false;
+                s.forEach(c => {
+                    const i = c.val(); currentCount++;
+                    if(i.notiz) { hasNotiz = true; nl.innerHTML += `<div class="notiz-highlight px-2 py-1 text-[9px] uppercase">⚠️ ${i.station}: ${i.notiz}</div>`; }
+                    list.innerHTML += `<div class="p-3 bg-[#0f1a14] border border-white/10 text-center text-[10px] font-bold ${i.urgent?'sos-alert':''}">📍 ${i.station}</div>`;
+                });
+                document.getElementById('notizMonitor').classList.toggle('hidden', !hasNotiz);
+                updateGlobalState();
+            });
+
+            // Müllüberwachung
+            database.ref('mull_pozivi').on('value', s => {
+                const l = document.getElementById('mullPanel'); l.innerHTML = '';
+                s.forEach(c => { l.innerHTML += `<div class="card-dark p-4 flex justify-between items-center text-[11px] font-bold"><span>📍 ${c.val().station} - ${c.val().detail}</span><button onclick="database.ref('mull_pozivi/${c.key}').remove()" class="btn-minimal px-3 py-1 uppercase">Erledigt</button></div>`; });
             });
         }
 
-        function updateCoach(cart, free) {
-            const el = document.getElementById('efficiency-status'); const btn = document.getElementById('btn-clear-cart'); const lock = document.getElementById('lock-msg');
-            let isLocked = false; let msg = "Wagen leer. Bitte Abholungen bestätigen.";
-            if (cart > 0 && cart < 6) { msg = `Wagen teils beladen (${cart}/6). Waschgang ab 3 Körben möglich.`; isLocked = (free < 1 || cart < 3); } 
-            else if (cart >= 6) { msg = "Wagen ist voll beladen (6/6). 2 freie Waschmaschinen benötigt!"; isLocked = (free < 2); }
-            if (free === 0 && cart >= 3) msg = "Alle Waschmaschinen besetzt. Bitte warten.";
-            el.innerText = msg; btn.disabled = isLocked; lock.classList.toggle('hidden', !isLocked || cart < 3);
-        }
-
-        async function clearMyCartAuto() {
+        async function updateGlobalState() {
             const snap = await database.ref('timers').once('value'); const t = snap.val() || {};
-            let mid = null; for(let i=1; i<=3; i++) { if(!t['m'+i]) { mid=i; break; } }
-            if(mid) {
-                database.ref('timers/m'+mid).set({ endTime: Date.now()+(80*60*1000), status: 'waschen', startedBy: userConfig.name });
-                database.ref('ves_pozivi').once('value', s => { s.forEach(c => { if(c.val().seenBy === userConfig.name) c.ref.remove(); }); });
-            }
+            freeMachines = 0; for(let i=1; i<=3; i++) { if(!t['m'+i]) freeMachines++; }
+            const bar = document.getElementById('auto-notify'); const msg = document.getElementById('notify-msg'); const sub = document.getElementById('notify-sub'); const box = document.getElementById('notify-box'); const btn = document.getElementById('btn-rundgang');
+
+            if(currentCount >= 3) {
+                bar.classList.remove('hidden');
+                const needsTwo = currentCount >= 6;
+                const canStart = needsTwo ? (freeMachines >= 2) : (freeMachines >= 1);
+                if(needsTwo) {
+                    msg.innerText = `🚨 WAGEN VOLL (${currentCount}/6)`;
+                    if(freeMachines < 2) {
+                        sub.innerText = `STOPP: 2 freie Maschinen benötigt! (Aktuell: ${freeMachines})`;
+                        box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-red-500 bg-red-900/20";
+                        btn.disabled = true;
+                    } else {
+                        sub.innerText = `${freeMachines} Maschinen frei. Rundgang OK!`;
+                        box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-hellgruen bg-hellgruen/10";
+                        btn.disabled = false;
+                    }
+                } else {
+                    msg.innerText = `🧺 1 MASCHINE VOLL (${currentCount}/6)`;
+                    if(freeMachines < 1) {
+                        sub.innerText = `WARTEN: Alle Maschinen besetzt!`;
+                        box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-red-500 bg-red-900/20";
+                        btn.disabled = true;
+                    } else {
+                        sub.innerText = `1 Maschine frei. Rundgang OK!`;
+                        box.className = "p-4 flex flex-col md:flex-row justify-between items-center rounded gap-4 border-2 border-warn-gelb bg-warn-gelb/10 text-warn-gelb";
+                        btn.disabled = false;
+                    }
+                }
+            } else { bar.classList.add('hidden'); }
         }
 
-        function moveToDryer(id) { database.ref('timers/m'+id).update({ status: 'trocknen' }); }
+        function startRundgang() { database.ref('ves_pozivi').remove(); }
+        function startMachine(id) { database.ref('timers/m'+id).set({ endTime: Date.now()+(80*60*1000) }); }
         function finishMachine(id) { database.ref('timers/m'+id).remove(); }
-        function fillMyCart() { database.ref('ves_pozivi').once('value', s => { let c=0; s.forEach(x => { if(x.val().seenBy === userConfig.name) c++; }); s.forEach(x => { if(!x.val().seenBy && c<6) { database.ref('ves_pozivi/'+x.key).update({seenBy:userConfig.name}); c++; } }); }); }
-        function sendWash() { const n = document.getElementById('userNotiz').value; const u = document.getElementById('isUrgent').checked; database.ref('ves_pozivi/'+Date.now()).set({ station: userConfig.station, notiz: n, urgent: u, sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), seenBy: "" }); document.getElementById('isUrgent').checked=false; document.getElementById('userNotiz').value=""; }
-        function quickMull(t) { database.ref('mull_pozivi/'+Date.now()).set({ station: userConfig.station, detail: t, sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}), seen: false }); }
-        function listenToOnlineUsers() { database.ref('online_users').on('value', (s) => { const l = document.getElementById('statusList'); l.innerHTML=''; if(!s.val()) return; Object.values(s.val()).forEach(u => { let d = []; if(u.wesche) d.push('🧺'); if(u.mull) d.push('🗑️'); l.innerHTML += `<span>${u.name}${d.join('')}</span>`; }); }); }
-
-        database.ref('ves_pozivi/').on('value', (s) => {
-            const ml = document.getElementById('wescheList'); const mc = document.getElementById('myCartList'); const nl = document.getElementById('notizList');
-            ml.innerHTML=''; mc.innerHTML=''; nl.innerHTML=''; let cart=0; let open=0; let hasN=false;
-            s.forEach(c => {
-                const i = c.val(); const k = c.key; if(i.notiz && (!i.seenBy || i.seenBy === userConfig.name)) { hasN=true; nl.innerHTML += `<div class="bg-beige text-dunkelgruen px-2 py-1 text-[9px] uppercase font-bold">${i.station}: ${i.notiz}</div>`; }
-                const card = `<div class="p-3 mb-2 flex justify-between items-center border border-subtle ${i.urgent && !i.seenBy ? 'sos-alert' : ''}"><div class="text-[10px] font-bold">📍 ${i.station}</div><div>${!i.seenBy ? `<button onclick="database.ref('ves_pozivi/${k}').update({seenBy:userConfig.name})" class="bg-beige text-dunkelgruen px-3 py-1 text-[8px] font-bold uppercase">Holen</button>` : `<button onclick="database.ref('ves_pozivi/${k}').remove()" class="text-red-500 px-2">×</button>`}</div></div>`;
-                if(!i.seenBy) { ml.innerHTML += card; open++; } else if(i.seenBy === userConfig.name) { mc.innerHTML += card; cart++; }
-            });
-            updateTabNotification(open); lastWescheCount = open; currentCartCount=cart; document.getElementById('notizMonitor').classList.toggle('hidden', !hasN); checkFreeMachines();
-        });
-
-        database.ref('mull_pozivi/').on('value', (s) => {
-            const l = document.getElementById('mullList'); l.innerHTML='';
-            s.forEach(c => { l.innerHTML += `<div class="card-dark p-4 flex justify-between items-center"><div class="text-xs font-bold uppercase">📍 ${c.val().station}<br><span class="text-[9px] opacity-40">${c.val().detail}</span></div><button onclick="database.ref('mull_pozivi/${c.key}').remove()" class="btn-minimal px-4 py-2 text-[10px]">Erledigt</button></div>`; });
-        });
-
-        function startBodenCheck() { setInterval(() => { const t = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date()); if(t === "14:00") document.getElementById('bodenModal').classList.remove('hidden'); }, 60000); }
-        function closeBoden() { document.getElementById('bodenModal').classList.add('hidden'); }
-        function startResetCheck() { setInterval(() => { const t = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date()); if(t === "20:00") { database.ref('ves_pozivi').remove(); database.ref('mull_pozivi').remove(); database.ref('timers').remove(); } }, 60000); }
+        function sendWash() { const n = document.getElementById('userNotiz').value; const u = document.getElementById('isUrgent').checked; database.ref('ves_pozivi/'+Date.now()).set({ station: userConfig.station, notiz: n, urgent: u }); document.getElementById('userNotiz').value = ""; document.getElementById('isUrgent').checked = false; }
+        function quickMull(d) { database.ref('mull_pozivi/'+Date.now()).set({ station: userConfig.station, detail: d }); }
     </script>
 </body>
 </html>
