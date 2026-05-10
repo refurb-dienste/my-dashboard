@@ -10,20 +10,17 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
         body { font-family: 'JetBrains Mono', monospace; background-color: #f4f7f4; }
-        .urgent-alert { animation: pulse 2s infinite; border-left: 8px solid #ef4444 !important; }
         .dringend-alert { animation: pulse 0.8s infinite; border-left: 8px solid #ef4444 !important; background-color: #fef2f2 !important; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
-        .timer-finished { background-color: #ef4444 !important; color: white !important; border: 3px solid black !important; }
-        .btn-alarm { animation: blinkRed 0.5s infinite; background-color: #ef4444 !important; color: white !important; }
-        @keyframes blinkRed { 0% { background-color: #ef4444; } 50% { background-color: #000; } 100% { background-color: #ef4444; } }
+        .timer-finished { background-color: #ef4444 !important; color: white !important; border: 3px solid black !important; animation: blinkRed 1s infinite; }
+        @keyframes blinkRed { 0% { background-color: #ef4444; } 50% { background-color: #7f1d1d; } 100% { background-color: #ef4444; } }
         .dark-green-gradient { background: linear-gradient(135deg, #1a3c34 0%, #0d211d 100%); }
+        button:disabled { background: #cbd5e1 !important; color: #94a3b8 !important; cursor: not-allowed !important; transform: none !important; }
     </style>
 </head>
 <body class="min-h-screen text-slate-900 pb-10">
 
-    <div id="sendFeedback" class="hidden fixed bottom-10 left-1/2 -translate-x-1/2 bg-[#1a3c34] text-white px-8 py-4 rounded-full z-[300] font-black uppercase shadow-2xl tracking-widest border-2 border-white">
-        GESENDET! 🚀✅
-    </div>
+    <div id="sendFeedback" class="hidden fixed bottom-10 left-1/2 -translate-x-1/2 bg-[#1a3c34] text-white px-8 py-4 rounded-full z-[300] font-black uppercase shadow-2xl border-2 border-white text-center"></div>
 
     <div id="loginScreen" class="fixed inset-0 bg-[#1a3c34] z-[100] flex items-center justify-center p-6">
         <div class="bg-white p-10 rounded-3xl shadow-2xl max-w-md w-full text-center border-b-[15px] border-emerald-900">
@@ -57,13 +54,12 @@
                     <span id="activeStationDisplay" class="bg-white px-4 py-2 text-[#1a3c34] text-xs font-black rounded-lg shadow-inner"></span>
                     <button onclick="quickMull('Restmüll 🗑️')" class="bg-slate-700/50 px-3 py-2 text-[10px] uppercase font-black rounded-lg hover:bg-black transition-colors">Restmüll</button>
                     <button onclick="quickMull('Papier 📄')" class="bg-blue-800/50 px-3 py-2 text-[10px] uppercase font-black rounded-lg hover:bg-blue-900 transition-colors">Papier</button>
-                    <button onclick="sendWash()" class="bg-white text-[#1a3c34] px-5 py-2 uppercase text-xs font-black italic rounded-lg hover:bg-emerald-50 shadow-md">🧺 WÄSCHEKORB VOLL</button>
-                    <input type="text" id="userNotiz" placeholder="SONDERWUNSCH..." class="p-2 text-xs uppercase text-slate-900 w-36 font-bold rounded-lg outline-none border-2 border-emerald-900/20">
+                    <button onclick="sendWash()" class="bg-white text-[#1a3c34] px-5 py-2 uppercase text-xs font-black italic rounded-lg hover:bg-emerald-50 shadow-md">🧺 KORB VOLL</button>
+                    <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-2 text-xs uppercase text-slate-900 w-28 font-bold rounded-lg outline-none">
                     <label class="flex items-center text-[10px] uppercase font-black px-2 cursor-pointer"><input type="checkbox" id="isUrgent" class="mr-2 w-4 h-4 accent-red-500"> DRINGEND!</label>
                 </div>
 
-                <div id="liveStatus" class="bg-slate-100 p-3 text-[9px] uppercase border-2 border-slate-200 rounded-xl min-w-[220px] max-h-32 overflow-y-auto shadow-inner">
-                    <p class="font-black border-b-2 border-slate-300 mb-2 pb-1 flex justify-between"><span>Live-Status:</span> <span class="animate-pulse text-emerald-600">●</span></p>
+                <div id="liveStatus" class="bg-slate-100 p-3 text-[9px] uppercase border-2 border-slate-200 rounded-xl min-w-[200px] max-h-24 overflow-y-auto">
                     <div id="statusList" class="space-y-1"></div>
                 </div>
             </div>
@@ -72,44 +68,43 @@
         <main class="max-w-7xl mx-auto p-6">
             <div id="weschePanel" class="hidden space-y-8">
                 <div id="notizMonitor" class="bg-yellow-100 border-4 border-yellow-400 p-5 rounded-2xl shadow-xl hidden">
-                    <h3 class="text-xs font-black uppercase mb-3 text-yellow-800 flex items-center gap-2">
-                        <span>⚠️</span> SONDERWÜNSCHE (AKTIV BIS WAGEN GELEERT):
-                    </h3>
+                    <h3 class="text-xs font-black uppercase mb-3 text-yellow-800">⚠️ SONDERWÜNSCHE:</h3>
                     <div id="notizList" class="flex flex-wrap gap-3"></div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     <div class="lg:col-span-2 bg-white p-6 rounded-3xl border-t-8 border-slate-300 shadow-md">
-                        <h3 class="text-xs uppercase font-black mb-6 tracking-widest text-slate-400 flex justify-between">OFFENE MELDUNGEN <span id="openCount" class="text-slate-800">0</span></h3>
+                        <h3 class="text-xs uppercase font-black mb-6 tracking-widest text-slate-400 flex justify-between">OFFENE KÖRBE <span id="openCount" class="text-slate-800">0</span></h3>
                         <div id="wescheList" class="space-y-3"></div>
                     </div>
 
                     <div class="lg:col-span-1 bg-white p-6 rounded-3xl border-t-8 border-[#1a3c34] shadow-2xl relative">
-                        <h3 class="text-xs uppercase font-black mb-1 text-emerald-800">Wäschewagen</h3>
+                        <h3 class="text-xs uppercase font-black mb-1 text-emerald-800 italic">Dein Wagen</h3>
                         <div id="efficiency-status" class="text-[10px] uppercase font-black p-3 mb-4 rounded-xl bg-slate-50 text-center border border-slate-200 shadow-inner min-h-[40px]">Bereit...</div>
                         <div id="myCartList" class="space-y-3"></div>
                         <div class="mt-6 space-y-2">
-                            <button onclick="fillMyCart()" class="w-full bg-emerald-100 text-[#1a3c34] py-3 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-200 transition-all">Wagen füllen (max. 6) 🧺</button>
-                            <button onclick="clearMyCart()" class="w-full dark-green-gradient text-white py-4 rounded-xl text-xs uppercase font-extrabold hover:scale-95 transition-all shadow-lg">Wagen leeren ✔️</button>
+                            <button onclick="fillMyCart()" class="w-full bg-emerald-100 text-[#1a3c34] py-3 rounded-xl text-[10px] font-black uppercase hover:bg-emerald-200 transition-all">Körbe einladen 🧺</button>
+                            <button id="btn-clear-cart" onclick="clearMyCartAuto()" class="w-full dark-green-gradient text-white py-4 rounded-xl text-xs uppercase font-extrabold hover:scale-95 transition-all shadow-lg">Wagen leeren & Start ✔️</button>
+                            <p id="lock-msg" class="text-[9px] text-red-500 font-bold uppercase text-center hidden italic">Alle Maschinen besetzt!</p>
                         </div>
                     </div>
 
                     <div class="lg:col-span-1 space-y-4">
-                        <h3 class="text-xs uppercase font-black text-slate-400 tracking-widest text-center">WASCHTURM</h3>
-                        <div id="timer-box-1" class="bg-white p-5 rounded-2xl border-b-4 border-slate-200 shadow-md text-center">
-                            <p class="text-[10px] font-black uppercase mb-1 text-slate-400">Maschine 1</p><div id="timer-val-1" class="text-3xl font-black mb-3">80:00</div>
-                            <div class="flex gap-2"><button id="btn-start-1" onclick="triggerTimer(1)" class="flex-1 bg-slate-100 p-3 rounded-lg text-[10px] font-black uppercase hover:bg-emerald-100">START</button>
-                            <button id="btn-clear-1" onclick="clearTimer(1)" class="hidden flex-1 p-3 rounded-lg text-[10px] font-black uppercase">LEEREN 🚨</button></div>
+                        <h3 class="text-xs uppercase font-black text-slate-400 tracking-widest text-center">PRODUKTION</h3>
+                        <div id="timer-box-1" class="bg-white p-4 rounded-2xl border-b-4 border-slate-200 shadow-md text-center transition-all duration-500">
+                            <p class="text-[9px] font-black uppercase text-slate-400">Maschine 1</p>
+                            <div id="timer-val-1" class="text-2xl font-black my-2 tracking-tighter">LEER</div>
+                            <div id="machine-actions-1"></div>
                         </div>
-                        <div id="timer-box-2" class="bg-white p-5 rounded-2xl border-b-4 border-slate-200 shadow-md text-center">
-                            <p class="text-[10px] font-black uppercase mb-1 text-slate-400">Maschine 2</p><div id="timer-val-2" class="text-3xl font-black mb-3">80:00</div>
-                            <div class="flex gap-2"><button id="btn-start-2" onclick="triggerTimer(2)" class="flex-1 bg-slate-100 p-3 rounded-lg text-[10px] font-black uppercase hover:bg-emerald-100">START</button>
-                            <button id="btn-clear-2" onclick="clearTimer(2)" class="hidden flex-1 p-3 rounded-lg text-[10px] font-black uppercase">LEEREN 🚨</button></div>
+                        <div id="timer-box-2" class="bg-white p-4 rounded-2xl border-b-4 border-slate-200 shadow-md text-center transition-all duration-500">
+                            <p class="text-[9px] font-black uppercase text-slate-400">Maschine 2</p>
+                            <div id="timer-val-2" class="text-2xl font-black my-2 tracking-tighter">LEER</div>
+                            <div id="machine-actions-2"></div>
                         </div>
-                        <div id="timer-box-3" class="bg-white p-5 rounded-2xl border-b-4 border-slate-200 shadow-md text-center">
-                            <p class="text-[10px] font-black uppercase mb-1 text-slate-400">Maschine 3</p><div id="timer-val-3" class="text-3xl font-black mb-3">80:00</div>
-                            <div class="flex gap-2"><button id="btn-start-3" onclick="triggerTimer(3)" class="flex-1 bg-slate-100 p-3 rounded-lg text-[10px] font-black uppercase hover:bg-emerald-100">START</button>
-                            <button id="btn-clear-3" onclick="clearTimer(3)" class="hidden flex-1 p-3 rounded-lg text-[10px] font-black uppercase">LEEREN 🚨</button></div>
+                        <div id="timer-box-3" class="bg-white p-4 rounded-2xl border-b-4 border-slate-200 shadow-md text-center transition-all duration-500">
+                            <p class="text-[9px] font-black uppercase text-slate-400">Maschine 3</p>
+                            <div id="timer-val-3" class="text-2xl font-black my-2 tracking-tighter">LEER</div>
+                            <div id="machine-actions-3"></div>
                         </div>
                     </div>
                 </div>
@@ -124,9 +119,9 @@
 
     <div id="bodenModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[200]">
         <div class="bg-white p-16 text-center max-w-xl rounded-[40px] border-b-[20px] border-[#1a3c34] shadow-2xl">
-            <h2 class="text-5xl font-black mb-6 uppercase tracking-tighter">BODENDIENST</h2>
-            <p class="text-slate-400 mb-10 font-bold text-2xl uppercase italic">Bitte jetzt Boden reinigen!</p>
-            <button onclick="closeBoden()" class="dark-green-gradient text-white px-16 py-6 rounded-2xl text-2xl font-black shadow-2xl">ERLEDIGT ✅</button>
+            <h2 class="text-5xl font-black mb-6 uppercase">BODENDIENST</h2>
+            <p class="text-slate-400 mb-10 font-bold text-2xl uppercase">Bitte jetzt Boden reinigen!</p>
+            <button onclick="closeBoden()" class="dark-green-gradient text-white px-16 py-6 rounded-2xl text-2xl font-black">ERLEDIGT ✅</button>
         </div>
     </div>
 
@@ -146,8 +141,6 @@
         let userConfig = { name: "", station: "", wesche: false, mull: false, boden: false };
         let activeIntervals = { 1: null, 2: null, 3: null };
         let currentCartCount = 0;
-        
-        // Benachrichtigungs-Status
         let stats = { wCount: 0, mCount: 0, bodenAktiv: false };
         let lastStats = { wCount: 0, mCount: 0 };
 
@@ -155,72 +148,32 @@
             const name = document.getElementById('userName').value;
             const station = document.getElementById('userStation').value;
             if(!name) return alert("NAME FEHLT!");
-            
             userConfig = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
             const onlineRef = database.ref('online_users/' + name + '_' + station);
             onlineRef.set(userConfig); onlineRef.onDisconnect().remove();
-            
             document.getElementById('displayUser').innerText = `MA: ${name} | ${station}`;
             document.getElementById('activeStationDisplay').innerText = station;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            
             if(userConfig.wesche) document.getElementById('weschePanel').classList.remove('hidden');
             if(userConfig.mull) document.getElementById('mullPanel').classList.remove('hidden');
-            
             syncTimers(); listenToOnlineUsers();
             if(userConfig.boden) startBodenCheck();
             startResetCheck();
         }
 
-        // ZENTRALE LOGIK FÜR TAB-BLINKER
         function updateTabNotification() {
             let label = "";
             const hasNewW = userConfig.wesche && stats.wCount > lastStats.wCount;
             const hasNewM = userConfig.mull && stats.mCount > lastStats.mCount;
-            
-            if (hasNewW && hasNewM) label = "!! NEUE AUFGABE !!";
-            else if (hasNewW) label = "!! NEUE WÄSCHE !!";
-            else if (hasNewM) label = "!! NEUER MÜLL !!";
+            if (hasNewW || hasNewM) label = "!! NEUE AUFGABE !!";
             else if (stats.bodenAktiv) label = "!! BODENDIENST !!";
 
             if (label !== "") {
                 document.title = label;
                 new Audio('https://actions.google.com/sounds/v1/alerts/minimal_effects_bell_ring.ogg').play().catch(()=>{});
-            } else {
-                document.title = "Aufbereitung-Dienst";
-            }
+            } else { document.title = "Aufbereitung-Dienst"; }
         }
-
-        function listenToOnlineUsers() {
-            database.ref('online_users').on('value', (s) => {
-                const list = document.getElementById('statusList'); list.innerHTML = '';
-                if(!s.val()) return;
-                Object.values(s.val()).forEach(u => {
-                    let r = []; if(u.wesche) r.push("Wäsche"); if(u.mull) r.push("Müll"); if(u.boden) r.push("Boden");
-                    if(r.length === 0) r.push("Melder");
-                    list.innerHTML += `<div class="border-b border-slate-200 pb-1 flex justify-between"><span class="font-black text-[#1a3c34]">${u.name} (${u.station})</span> <span class="text-slate-400 font-bold">${r.join(', ')}</span></div>`;
-                });
-            });
-        }
-
-        function sendWash() {
-            const notiz = document.getElementById('userNotiz').value;
-            const urgent = document.getElementById('isUrgent').checked;
-            database.ref('ves_pozivi/' + Date.now()).set({ 
-                station: userConfig.station, detail: "Wäschekorb voll", notiz, urgent,
-                sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seenBy: ""
-            });
-            document.getElementById('isUrgent').checked = false; document.getElementById('userNotiz').value = ""; 
-            const fb = document.getElementById('sendFeedback'); fb.classList.remove('hidden'); setTimeout(() => fb.classList.add('hidden'), 2000);
-        }
-
-        function triggerTimer(id) {
-            const endTime = Date.now() + (80 * 60 * 1000);
-            database.ref('timers/m' + id).set({ endTime, startedBy: userConfig.name, active: true });
-        }
-
-        function clearTimer(id) { database.ref('timers/m' + id).remove(); }
 
         function syncTimers() {
             [1, 2, 3].forEach(id => {
@@ -228,34 +181,38 @@
                     const data = s.val();
                     const box = document.getElementById('timer-box-' + id);
                     const val = document.getElementById('timer-val-' + id);
-                    const btnStart = document.getElementById('btn-start-' + id);
-                    const btnClear = document.getElementById('btn-clear-' + id);
+                    const actions = document.getElementById('machine-actions-' + id);
                     
                     if(activeIntervals[id]) clearInterval(activeIntervals[id]);
-                    box.classList.remove('timer-finished');
-                    btnClear.classList.remove('btn-alarm');
+                    box.className = "bg-white p-4 rounded-2xl border-b-4 border-slate-200 shadow-md text-center transition-all duration-500";
+                    actions.innerHTML = "";
 
                     if(!data) {
-                        val.textContent = "80:00"; btnStart.classList.remove('hidden'); btnClear.classList.add('hidden');
+                        val.textContent = "BEREIT";
                         checkFreeMachines();
                         return;
                     }
 
-                    btnStart.classList.add('hidden'); btnClear.classList.remove('hidden');
-
-                    activeIntervals[id] = setInterval(() => {
-                        const diff = data.endTime - Date.now();
-                        if(diff <= 0) {
-                            clearInterval(activeIntervals[id]); 
-                            val.textContent = "FERTIG! 🚨"; 
-                            box.classList.add('timer-finished');
-                            btnClear.classList.add('btn-alarm');
-                        } else {
-                            const total = Math.floor(diff / 1000); const m = Math.floor(total / 60); const s = total % 60;
-                            val.textContent = (m < 10 ? "0":"") + m + ":" + (s < 10 ? "0":"") + s;
-                        }
+                    if(data.status === 'waschen') {
+                        activeIntervals[id] = setInterval(() => {
+                            const diff = data.endTime - Date.now();
+                            if(diff <= 0) {
+                                clearInterval(activeIntervals[id]);
+                                val.textContent = "WASCHEN FERTIG!";
+                                box.classList.add('timer-finished');
+                                actions.innerHTML = `<button onclick="moveToDryer(${id})" class="w-full bg-blue-600 text-white p-2 rounded-lg text-[10px] font-black uppercase animate-bounce">In Trockner ➔</button>`;
+                            } else {
+                                const total = Math.floor(diff / 1000); const m = Math.floor(total / 60); const s = total % 60;
+                                val.textContent = (m < 10 ? "0":"") + m + ":" + (s < 10 ? "0":"") + s;
+                            }
+                            checkFreeMachines();
+                        }, 1000);
+                    } else if(data.status === 'trocknen') {
+                        box.classList.add('bg-blue-50', 'border-blue-300');
+                        val.innerHTML = `<span class="text-blue-600">TROCKNEN / Z-LEGEN</span>`;
+                        actions.innerHTML = `<button onclick="finishMachine(${id})" class="w-full bg-emerald-600 text-white p-2 rounded-lg text-[10px] font-black uppercase">Erledigt (Lager) ✔️</button>`;
                         checkFreeMachines();
-                    }, 1000);
+                    }
                 });
             });
         }
@@ -263,153 +220,87 @@
         function checkFreeMachines() {
             database.ref('timers').once('value', s => {
                 const timers = s.val() || {};
-                let freeCount = 0;
-                [1, 2, 3].forEach(id => {
-                    const t = timers['m' + id];
-                    if(!t || (t.endTime - Date.now() <= 0)) {
-                        freeCount++;
-                    }
-                });
-                updateEfficiency(currentCartCount, freeCount);
+                let completelyFree = 0;
+                [1, 2, 3].forEach(id => { if(!timers['m' + id]) completelyFree++; });
+                
+                const btn = document.getElementById('btn-clear-cart');
+                const msg = document.getElementById('lock-msg');
+                if (completelyFree === 0) {
+                    btn.disabled = true; msg.classList.remove('hidden');
+                } else {
+                    btn.disabled = false; msg.classList.add('hidden');
+                }
+                updateEfficiency(currentCartCount, completelyFree);
             });
         }
+
+        async function clearMyCartAuto() {
+            if (currentCartCount === 0) return alert("WAGEN IST LEER!");
+            const snapshot = await database.ref('timers').once('value');
+            const timers = snapshot.val() || {};
+            let machineIdToStart = null;
+            for (let id = 1; id <= 3; id++) { if (!timers['m' + id]) { machineIdToStart = id; break; } }
+
+            if (machineIdToStart) {
+                const endTime = Date.now() + (80 * 60 * 1000);
+                database.ref('timers/m' + machineIdToStart).set({ endTime, startedBy: userConfig.name, status: 'waschen' });
+                database.ref('ves_pozivi').once('value', s => { s.forEach(c => { if(c.val().seenBy === userConfig.name) c.ref.remove(); }); });
+                showFeedback(`MASCHINE ${machineIdToStart} GESTARTET! 🌀`);
+            }
+        }
+
+        function moveToDryer(id) { database.ref('timers/m' + id).update({ status: 'trocknen' }); }
+        function finishMachine(id) { database.ref('timers/m' + id).remove(); }
+        function showFeedback(txt) { const fb = document.getElementById('sendFeedback'); fb.innerText = txt; fb.classList.remove('hidden'); setTimeout(() => fb.classList.add('hidden'), 3000); }
 
         function fillMyCart() {
             database.ref('ves_pozivi').once('value', s => {
-                let count = 0;
-                s.forEach(c => { if(c.val().seenBy === userConfig.name) count++; });
-                s.forEach(c => {
-                    if(!c.val().seenBy && count < 6) {
-                        database.ref('ves_pozivi/' + c.key).update({ seenBy: userConfig.name });
-                        count++;
-                    }
-                });
+                let count = 0; s.forEach(c => { if(c.val().seenBy === userConfig.name) count++; });
+                s.forEach(c => { if(!c.val().seenBy && count < 6) { database.ref('ves_pozivi/' + c.key).update({ seenBy: userConfig.name }); count++; } });
             });
         }
 
-        function quickMull(type) {
-            database.ref('mull_pozivi/' + Date.now()).set({ 
-                station: userConfig.station, detail: type, sender: userConfig.name, 
-                time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
-            });
+        function sendWash() {
+            const notiz = document.getElementById('userNotiz').value;
+            const urgent = document.getElementById('isUrgent').checked;
+            database.ref('ves_pozivi/' + Date.now()).set({ station: userConfig.station, notiz, urgent, sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seenBy: "" });
+            document.getElementById('isUrgent').checked = false; document.getElementById('userNotiz').value = ""; 
+            showFeedback("GESENDET! 🚀✅");
         }
 
-        database.ref('ves_pozivi/').on('value', (s) => renderLaundry(s));
-        database.ref('mull_pozivi/').on('value', (s) => renderMull(s));
+        function quickMull(type) { database.ref('mull_pozivi/' + Date.now()).set({ station: userConfig.station, detail: type, sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false }); }
 
-        function renderLaundry(snapshot) {
+        database.ref('ves_pozivi/').on('value', (s) => {
             if(!userConfig.wesche) return;
-            const mainList = document.getElementById('wescheList');
-            const myCart = document.getElementById('myCartList');
-            const notizList = document.getElementById('notizList');
-            const notizMonitor = document.getElementById('notizMonitor');
-            const openCountEl = document.getElementById('openCount');
-            
-            mainList.innerHTML = ''; myCart.innerHTML = ''; notizList.innerHTML = '';
-            let countInCart = 0; let totalOpen = 0; let hasNotizen = false;
-
-            snapshot.forEach(child => {
-                const item = child.val();
-                const key = child.key;
-                
-                if(item.notiz && (!item.seenBy || item.seenBy === userConfig.name)) {
-                    hasNotizen = true;
-                    notizList.innerHTML += `<div class="bg-white border-2 border-yellow-500 px-4 py-2 rounded-xl text-[10px] font-black uppercase shadow-sm">STATION ${item.station}: ${item.notiz}</div>`;
-                }
-
-                const card = `<div class="bg-slate-50 p-4 rounded-2xl border-l-8 border-[#1a3c34] shadow-sm flex justify-between items-center ${item.urgent && !item.seenBy ? 'dringend-alert' : ''}">
-                    <div><p class="font-black text-sm">${item.station}</p><p class="text-[9px] font-bold text-slate-400 uppercase">${item.time} ${item.notiz ? '⚡ NOTIZ' : ''}</p></div>
-                    <div class="flex gap-2">
-                        ${!item.seenBy ? `<button onclick="takeToCart('${key}')" class="bg-emerald-100 text-emerald-900 p-3 rounded-xl font-black text-[10px]">HOLEN 👁️</button>` : ''}
-                        ${item.seenBy === userConfig.name ? `<button onclick="removeItem('ves_pozivi', '${key}')" class="bg-black text-white p-3 rounded-xl text-[10px] font-black">OK ✔️</button>` : ''}
-                    </div>
-                </div>`;
-
-                if(!item.seenBy) {
-                    mainList.innerHTML += card;
-                    totalOpen++;
-                } else if(item.seenBy === userConfig.name) {
-                    myCart.innerHTML += card;
-                    countInCart++;
-                }
+            const mainList = document.getElementById('wescheList'); const myCart = document.getElementById('myCartList');
+            const nm = document.getElementById('notizMonitor'); const nl = document.getElementById('notizList');
+            mainList.innerHTML = ''; myCart.innerHTML = ''; nl.innerHTML = '';
+            let countInCart = 0; let totalOpen = 0; let hasNotiz = false;
+            s.forEach(child => {
+                const item = child.val(); const key = child.key;
+                if(item.notiz && (!item.seenBy || item.seenBy === userConfig.name)) { hasNotiz = true; nl.innerHTML += `<div class="bg-white border-2 border-yellow-500 px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-tight">${item.station}: ${item.notiz}</div>`; }
+                const card = `<div class="bg-slate-50 p-3 rounded-2xl border-l-4 border-[#1a3c34] flex justify-between items-center ${item.urgent && !item.seenBy ? 'dringend-alert' : ''}"><div><p class="font-black text-xs">${item.station}</p></div><div class="flex gap-2">${!item.seenBy ? `<button onclick="takeToCart('${key}')" class="bg-emerald-100 text-emerald-900 px-3 py-2 rounded-xl font-black text-[9px]">HOLEN</button>` : `<button onclick="removeItem('ves_pozivi', '${key}')" class="bg-slate-200 px-3 py-2 rounded-xl text-[9px] font-black">X</button>`}</div></div>`;
+                if(!item.seenBy) { mainList.innerHTML += card; totalOpen++; } else if(item.seenBy === userConfig.name) { myCart.innerHTML += card; countInCart++; }
             });
+            stats.wCount = totalOpen; updateTabNotification(); lastStats.wCount = totalOpen;
+            document.getElementById('openCount').innerText = totalOpen; currentCartCount = countInCart;
+            nm.classList.toggle('hidden', !hasNotiz); checkFreeMachines();
+        });
 
-            stats.wCount = totalOpen;
-            updateTabNotification();
-            lastStats.wCount = totalOpen;
-
-            openCountEl.innerText = totalOpen;
-            currentCartCount = countInCart;
-            notizMonitor.classList.toggle('hidden', !hasNotizen);
-            checkFreeMachines();
-        }
-
-        function renderMull(snapshot) {
+        database.ref('mull_pozivi/').on('value', (s) => {
             if(!userConfig.mull) return;
-            const list = document.getElementById('mullList'); list.innerHTML = '';
-            let mCount = 0;
-            snapshot.forEach(child => {
-                const item = child.val();
-                mCount++;
-                list.innerHTML += `<div class="bg-slate-50 p-4 rounded-2xl border-l-8 border-slate-800 flex justify-between items-center shadow-md">
-                    <div><p class="font-black text-sm uppercase">${item.station}</p><p class="text-[10px] font-bold text-slate-400 italic">${item.detail} | ${item.time}</p></div>
-                    <button onclick="removeItem('mull_pozivi', '${child.key}')" class="bg-black text-white px-5 py-3 rounded-xl text-[10px] font-black">ERLEDIGT ✔️</button>
-                </div>`;
-            });
-            stats.mCount = mCount;
-            updateTabNotification();
-            lastStats.mCount = mCount;
-        }
+            const list = document.getElementById('mullList'); list.innerHTML = ''; let mCount = 0;
+            s.forEach(child => { const item = child.val(); mCount++; list.innerHTML += `<div class="bg-slate-50 p-4 rounded-2xl border-l-8 border-slate-800 flex justify-between items-center shadow-md"><div><p class="font-black text-sm uppercase">${item.station}</p><p class="text-[10px] font-bold text-slate-400 italic">${item.detail}</p></div><button onclick="removeItem('mull_pozivi', '${child.key}')" class="bg-black text-white px-5 py-3 rounded-xl text-[10px] font-black text-center">OK ✔️</button></div>`; });
+            stats.mCount = mCount; updateTabNotification(); lastStats.mCount = mCount;
+        });
 
         function takeToCart(key) { database.ref('ves_pozivi/' + key).update({ seenBy: userConfig.name }); }
         function removeItem(path, key) { database.ref(path + '/' + key).remove(); }
-        function clearMyCart() {
-            database.ref('ves_pozivi').once('value', s => {
-                s.forEach(c => { if(c.val().seenBy === userConfig.name) c.ref.remove(); });
-            });
-        }
-
-        function updateEfficiency(cartCount, freeMachines = 0) {
-            const el = document.getElementById('efficiency-status');
-            let html = `Im Wagen: ${cartCount}/6 Körbe`;
-            let style = "text-[10px] uppercase font-black p-3 mb-4 rounded-xl bg-slate-100 text-center text-slate-500 border border-slate-200 shadow-inner";
-            
-            if(cartCount >= 6) {
-                style = "text-[10px] uppercase font-black p-3 mb-4 rounded-xl text-center bg-red-600 text-white animate-pulse";
-                html = `🚨 WAGEN VOLL (${cartCount}/6) - ABHOLEN!`;
-            }
-
-            if(cartCount > 0 && freeMachines >= 2) {
-                html += `<div class="mt-2 bg-emerald-600 text-white p-2 rounded-lg animate-bounce text-[9px]">2 MASCHINEN BEREIT FÜR DEINEN WAGEN! 🚨</div>`;
-            }
-
-            el.className = style;
-            el.innerHTML = html;
-        }
-
-        function startBodenCheck() {
-            setInterval(() => {
-                const t = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date());
-                if(t === "14:00") {
-                    document.getElementById('bodenModal').classList.remove('hidden');
-                    stats.bodenAktiv = true;
-                    updateTabNotification();
-                }
-            }, 60000);
-        }
-        function closeBoden() { 
-            document.getElementById('bodenModal').classList.add('hidden'); 
-            stats.bodenAktiv = false;
-            updateTabNotification();
-        }
-        function startResetCheck() {
-            setInterval(() => {
-                const t = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date());
-                if(t === "20:00") {
-                    database.ref('ves_pozivi').remove(); database.ref('mull_pozivi').remove(); database.ref('timers').remove();
-                }
-            }, 60000);
-        }
+        function listenToOnlineUsers() { database.ref('online_users').on('value', (s) => { const list = document.getElementById('statusList'); list.innerHTML = ''; if(!s.val()) return; Object.values(s.val()).forEach(u => { list.innerHTML += `<div class="flex justify-between text-[8px] font-bold border-b pb-1"><span>${u.name} (${u.station})</span> <span class="text-emerald-600 italic">online</span></div>`; }); }); }
+        function updateEfficiency(cart, free) { const el = document.getElementById('efficiency-status'); let style = "text-[10px] uppercase font-black p-3 mb-4 rounded-xl bg-slate-100 text-center border shadow-inner"; let html = `Wagen: ${cart}/6`; if(cart >= 6) { style = "text-[10px] uppercase font-black p-3 mb-4 rounded-xl text-center bg-red-600 text-white animate-pulse"; html = `🚨 WAGEN VOLL!`; } if(cart > 0 && free > 0) { html += `<div class="mt-1 bg-emerald-600 text-white p-1 rounded-lg animate-bounce text-[8px]">Maschine frei!</div>`; } el.className = style; el.innerHTML = html; }
+        function startBodenCheck() { setInterval(() => { const t = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date()); if(t === "14:00") { document.getElementById('bodenModal').classList.remove('hidden'); stats.bodenAktiv = true; updateTabNotification(); } }, 60000); }
+        function closeBoden() { document.getElementById('bodenModal').classList.add('hidden'); stats.bodenAktiv = false; updateTabNotification(); }
+        function startResetCheck() { setInterval(() => { const t = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(new Date()); if(t === "20:00") { database.ref('ves_pozivi').remove(); database.ref('mull_pozivi').remove(); database.ref('timers').remove(); } }, 60000); }
     </script>
 </body>
 </html>
