@@ -113,15 +113,16 @@
     </div>
 
     <script>
+        // FIREBASE KONFIGURATION DIREKT EINGEBAUT
         const firebaseConfig = {
-  apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ",
-  databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", 
-  authDomain: "dienste-fluxs.firebaseapp.com",
-  projectId: "dienste-fluxs",
-  storageBucket: "dienste-fluxs.firebasestorage.app",
-  messagingSenderId: "137594684055",
-  appId: "1:137594684055:web:2e2ddc1ed5ce8ff8f6dfd2"
-};
+            apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ",
+            databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", 
+            authDomain: "dienste-fluxs.firebaseapp.com",
+            projectId: "dienste-fluxs",
+            storageBucket: "dienste-fluxs.firebasestorage.app",
+            messagingSenderId: "137594684055",
+            appId: "1:137594684055:web:2e2ddc1ed5ce8ff8f6dfd2"
+        };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
@@ -215,16 +216,16 @@
         function renderList(snapshot, elementId, path, hasRole) {
             const container = document.getElementById(elementId);
             if(!container || !hasRole) return;
-            let seenBaskets = 0; // GEÄNDERT: Zählt nur gesehene Körbe
+            let seenBaskets = 0; 
             let hasUrgent = false; 
             container.innerHTML = '';
             
             if(snapshot.val()) {
                 snapshot.forEach(child => {
                     const item = child.val();
-                    // Logik: Zähle für Effizienz nur, wenn es Wäsche ist UND auf "gesehen" geklickt wurde
+                    // Zählt nur für Effizienz, wenn auf Auge geklickt wurde
                     if (item.seen && item.detail === "Wäschekorb voll") { seenBaskets++; }
-                    if (!item.seen && item.urgent) { hasUrgent = true; } // Dringend-Alarm nur bei neuen
+                    if (!item.seen && item.urgent) { hasUrgent = true; } 
                     
                     let sc = item.seen ? 'is-seen' : (item.urgent ? 'dringend-alert' : 'urgent-alert');
                     container.innerHTML += `<div class="bg-slate-50 p-3 border-l-4 border-[#1a3c34] flex justify-between items-center ${sc} text-[11px]">
@@ -239,7 +240,6 @@
 
         function updateEfficiencyUI(count, urgent) {
             const statusDiv = document.getElementById('efficiency-status');
-            // GEÄNDERT: Limit ist jetzt 6
             if (urgent) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-urgent'; statusDiv.innerText = '🚨 SOFORT LOS! (DRINGENDE ANFRAGE)'; }
             else if (count >= 12) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-opti'; statusDiv.innerText = `🔥 MAXIMUM! (${count} KÖRBE) - ALLE MASCHINEN BELEGEN`; }
             else if (count >= 6) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-go'; statusDiv.innerText = `✅ WAGEN VOLL (${count}/6 KÖRBE) - JETZT ABHOLEN`; }
