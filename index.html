@@ -117,8 +117,15 @@
     </div>
 
     <script>
-        // FIREBASE CONFIG
-        const firebaseConfig = { apiKey: "...", databaseURL: "...", projectId: "...", appId: "..." };
+        const firebaseConfig = {
+  apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ",
+  databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", 
+  authDomain: "dienste-fluxs.firebaseapp.com",
+  projectId: "dienste-fluxs",
+  storageBucket: "dienste-fluxs.firebasestorage.app",
+  messagingSenderId: "137594684055",
+  appId: "1:137594684055:web:2e2ddc1ed5ce8ff8f6dfd2"
+};
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
