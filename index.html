@@ -16,7 +16,6 @@
         .timer-finished { background-color: #ef4444 !important; color: white !important; animation: pulse 1s infinite; border: 2px solid black !important; }
         input, select, button { font-family: 'Courier New', Courier, monospace; font-weight: bold; }
         
-        /* Efficiency Colors */
         .eff-wait { background-color: #facc15; color: black; }
         .eff-go { background-color: #22c55e; color: white; }
         .eff-opti { background-color: #16a34a; color: white; border: 2px solid #1a3c34; }
@@ -31,15 +30,14 @@
             <div class="space-y-4 text-left">
                 <input type="text" id="userName" placeholder="NAME EINGEBEN" class="w-full bg-slate-100 border-2 border-slate-200 p-4 rounded-none outline-none focus:border-[#1a3c34]">
                 <select id="userStation" class="w-full bg-slate-100 border-2 border-slate-200 p-4 rounded-none outline-none focus:border-[#1a3c34]">
-                    <option value="wks050">wks050</option><option value="wks051">wks051</option>
-                    <option value="wks052">wks052</option><option value="wks053">wks053</option>
-                    <option value="wks054">wks054</option><option value="wks055">wks055</option>
-                    <option value="wks056">wks056</option><option value="wks057">wks057</option>
-                    <option value="wks058">wks058</option><option value="wks059">wks059</option>
+                    <option value="wks050">wks050</option><option value="wks051">wks051</option><option value="wks052">wks052</option>
+                    <option value="wks053">wks053</option><option value="wks054">wks054</option><option value="wks055">wks055</option>
+                    <option value="wks056">wks056</option><option value="wks057">wks057</option><option value="wks058">wks058</option><option value="wks059">wks059</option>
                 </select>
                 <div class="grid grid-cols-1 gap-2">
                     <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-black">Wäschedienst</span></label>
                     <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkMull" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-black">Müll-Dienst</span></label>
+                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkBoden" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-black">Bodendienst</span></label>
                 </div>
                 <button onclick="doLogin()" class="w-full bg-[#1a3c34] text-white p-5 rounded-none uppercase hover:bg-black transition-all font-black">Starten</button>
             </div>
@@ -47,74 +45,81 @@
     </div>
 
     <div id="mainApp" class="hidden">
-        <header class="bg-white border-b-4 border-[#1a3c34] p-4 sticky top-0 z-50">
+        <header class="bg-white border-b-4 border-[#1a3c34] p-4 sticky top-0 z-50 text-slate-800">
             <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-[#1a3c34] text-white flex items-center justify-center text-xl">A</div>
-                    <div><h1 class="font-black text-xl uppercase tracking-tighter">Aufbereitung</h1><p id="displayUser" class="text-[10px] text-[#1a3c34] uppercase"></p></div>
+                    <div class="w-10 h-10 bg-[#1a3c34] text-white flex items-center justify-center text-xl font-black">A</div>
+                    <div><h1 class="font-black text-xl uppercase tracking-tighter">Aufbereitung</h1><p id="displayUser" class="text-[10px] text-[#1a3c34] uppercase font-bold"></p></div>
                 </div>
                 
                 <div class="flex flex-wrap items-center gap-2 bg-[#1a3c34] p-3 shadow-xl">
-                    <span id="activeStationDisplay" class="bg-white px-3 py-2 text-[#1a3c34] text-xs"></span>
+                    <span id="activeStationDisplay" class="bg-white px-3 py-2 text-[#1a3c34] text-xs font-black"></span>
                     <div class="flex gap-1 border-r border-white/20 pr-2 mr-2">
                         <button onclick="quickMull('Restmüll 🗑️')" class="bg-slate-700 text-white px-3 py-2 text-[10px] uppercase hover:bg-black">Restmüll</button>
                         <button onclick="quickMull('Papier 📄')" class="bg-blue-700 text-white px-3 py-2 text-[10px] uppercase hover:bg-blue-900">Papier</button>
                     </div>
-                    <select id="washType" class="p-2 rounded-none text-xs uppercase outline-none">
+                    <select id="washType" class="p-2 rounded-none text-xs uppercase outline-none font-bold">
                         <option value="Wäschekorb voll">🧺 Wäschekorb voll</option>
                     </select>
-                    <input type="text" id="userNotiz" placeholder="NOTIZ" class="p-2 rounded-none text-xs uppercase outline-none w-32">
-                    <label class="flex items-center bg-white/10 px-2 py-1 cursor-pointer text-white text-[10px] uppercase">
+                    <input type="text" id="userNotiz" placeholder="NOTIZ" class="p-2 rounded-none text-xs uppercase outline-none w-32 font-bold">
+                    <label class="flex items-center bg-white/10 px-2 py-1 cursor-pointer text-white text-[10px] uppercase font-bold">
                         <input type="checkbox" id="isUrgent" class="mr-1 accent-red-500"> DRINGEND!
                     </label>
-                    <button onclick="smartSend()" class="bg-white text-[#1a3c34] px-4 py-2 hover:bg-green-100 uppercase text-xs">Senden</button>
+                    <button onclick="smartSend()" class="bg-white text-[#1a3c34] px-4 py-2 hover:bg-green-100 uppercase text-xs font-black">Senden</button>
                 </div>
 
                 <div id="liveStatus" class="bg-slate-100 p-2 text-[9px] uppercase border border-slate-200 min-w-[150px]">
-                    <p class="font-black border-b border-slate-300 mb-1">Aktiv:</p>
+                    <p class="font-black border-b border-slate-300 mb-1">Live Status:</p>
                     <div id="statusList" class="space-y-1"></div>
                 </div>
             </div>
         </header>
 
         <main class="max-w-7xl mx-auto p-6">
-            <div id="weschePanel" class="hidden mb-8">
+            <div id="weschePanel" class="hidden mb-12">
                 <h2 class="text-xl uppercase font-black mb-4 border-b-4 border-[#1a3c34] inline-block">Wäschedienst Dashboard</h2>
+                <div id="efficiency-status" class="mb-4 p-4 text-center text-xs uppercase font-black bg-slate-100 text-slate-400">Warten...</div>
                 
-                <div id="efficiency-status" class="mb-4 p-4 text-center text-xs uppercase font-black bg-slate-100 text-slate-400">
-                    Warten auf Anfragen...
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1 bg-white p-6 border-t-4 border-[#1a3c34] shadow-sm">
-                        <h3 class="text-sm uppercase mb-4 text-slate-400">Anfragen</h3>
-                        <div id="wescheList" class="space-y-4"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-3 bg-white p-6 border-t-4 border-[#1a3c34] shadow-sm">
+                        <h3 class="text-sm uppercase mb-4 text-slate-400 tracking-widest">Offene Anfragen</h3>
+                        <div id="wescheList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                     </div>
-                    <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 text-slate-800">
-                        <div id="timer-box-1" class="bg-white p-6 border-t-4 border-slate-200 text-center shadow-sm">
-                            <p class="text-[10px] uppercase mb-2">Maschine 1</p>
-                            <div id="timer-val-1" class="text-3xl font-black mb-4">80:00</div>
+                    
+                    <div class="lg:col-span-1 flex flex-col gap-4">
+                        <h3 class="text-sm uppercase text-slate-400 tracking-widest text-center">Maschinenpark</h3>
+                        <div id="timer-box-1" class="bg-white p-4 border-t-4 border-slate-200 text-center shadow-sm">
+                            <p class="text-[9px] uppercase mb-1">Waschmaschine 1</p>
+                            <div id="timer-val-1" class="text-2xl font-black mb-2">80:00</div>
                             <button onclick="triggerTimer(1)" class="w-full bg-[#1a3c34] text-white py-2 text-[10px] uppercase hover:bg-black font-black">Start</button>
                         </div>
-                        <div id="timer-box-2" class="bg-white p-6 border-t-4 border-slate-200 text-center shadow-sm">
-                            <p class="text-[10px] uppercase mb-2">Maschine 2</p>
-                            <div id="timer-val-2" class="text-3xl font-black mb-4">80:00</div>
+                        <div id="timer-box-2" class="bg-white p-4 border-t-4 border-slate-200 text-center shadow-sm">
+                            <p class="text-[9px] uppercase mb-1">Waschmaschine 2</p>
+                            <div id="timer-val-2" class="text-2xl font-black mb-2">80:00</div>
                             <button onclick="triggerTimer(2)" class="w-full bg-[#1a3c34] text-white py-2 text-[10px] uppercase hover:bg-black font-black">Start</button>
                         </div>
-                        <div id="timer-box-3" class="bg-white p-6 border-t-4 border-slate-200 text-center shadow-sm">
-                            <p class="text-[10px] uppercase mb-2">Maschine 3</p>
-                            <div id="timer-val-3" class="text-3xl font-black mb-4">80:00</div>
+                        <div id="timer-box-3" class="bg-white p-4 border-t-4 border-slate-200 text-center shadow-sm">
+                            <p class="text-[9px] uppercase mb-1">Waschmaschine 3</p>
+                            <div id="timer-val-3" class="text-2xl font-black mb-2">80:00</div>
                             <button onclick="triggerTimer(3)" class="w-full bg-[#1a3c34] text-white py-2 text-[10px] uppercase hover:bg-black font-black">Start</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="mullPanel" class="bg-white p-8 border-t-8 border-slate-800 hidden shadow-sm max-w-2xl text-slate-800">
-                <h2 class="text-lg uppercase mb-6 font-black tracking-widest">Müll Monitor</h2>
-                <div id="mullList" class="space-y-4"></div>
+            <div id="mullPanel" class="bg-white p-8 border-t-8 border-slate-800 hidden shadow-sm max-w-4xl mb-12">
+                <h2 class="text-lg uppercase mb-6 font-black tracking-widest text-slate-800">Müll Monitor</h2>
+                <div id="mullList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
         </main>
+    </div>
+
+    <div id="bodenModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[200]">
+        <div class="bg-white p-12 text-center max-w-lg border-b-[12px] border-[#1a3c34]">
+            <h2 class="text-3xl font-black mb-4 uppercase text-[#1a3c34]">Bodendienst</h2>
+            <p class="text-slate-500 mb-8 font-bold text-xl uppercase">Boden jetzt reinigen!</p>
+            <button onclick="closeBoden()" class="bg-[#1a3c34] text-white px-12 py-5 text-xl uppercase font-black">Erledigt ✅</button>
+        </div>
     </div>
 
     <audio id="alarm-finished" src="https://actions.google.com/sounds/v1/alarms/alarm_clock_beep.ogg"></audio>
@@ -122,7 +127,7 @@
     <audio id="urgent-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
     <script>
-       const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ",
   databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", 
   authDomain: "dienste-fluxs.firebaseapp.com",
@@ -134,7 +139,7 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        let userConfig = { name: "", station: "", wesche: false, mull: false };
+        let userConfig = { name: "", station: "", wesche: false, mull: false, boden: false };
         let firstLoad = { wesche: true, mull: true };
         let activeIntervals = { 1: null, 2: null, 3: null };
 
@@ -142,18 +147,29 @@
             const name = document.getElementById('userName').value;
             const station = document.getElementById('userStation').value;
             if(!name) return alert("NAME EINGEBEN!");
-            userConfig = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked };
+            
+            userConfig = { 
+                name, station, 
+                wesche: document.getElementById('checkWesche').checked, 
+                mull: document.getElementById('checkMull').checked,
+                boden: document.getElementById('checkBoden').checked 
+            };
+
             const onlineRef = database.ref('online_users/' + name + '_' + station);
-            onlineRef.set({ name, station, wesche: userConfig.wesche, mull: userConfig.mull });
+            onlineRef.set(userConfig);
             onlineRef.onDisconnect().remove();
+
             document.getElementById('displayUser').innerText = `USER: ${name} | ${station}`;
             document.getElementById('activeStationDisplay').innerText = station;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
+            
             if(userConfig.wesche) document.getElementById('weschePanel').classList.remove('hidden');
             if(userConfig.mull) document.getElementById('mullPanel').classList.remove('hidden');
+            
             syncTimers();
             listenToOnlineUsers();
+            if(userConfig.boden) startBodenCheck();
         }
 
         function triggerTimer(id) {
@@ -164,8 +180,7 @@
         function syncTimers() {
             [1, 2, 3].forEach(id => {
                 database.ref('timers/m' + id).on('value', (s) => {
-                    const data = s.val();
-                    if(!data) return;
+                    const data = s.val(); if(!data) return;
                     if(activeIntervals[id]) clearInterval(activeIntervals[id]);
                     const box = document.getElementById('timer-box-' + id);
                     const display = document.getElementById('timer-val-' + id);
@@ -179,8 +194,7 @@
                             if(userConfig.wesche) document.getElementById('alarm-finished').play();
                         } else {
                             const total = Math.floor(diff / 1000);
-                            const m = Math.floor(total / 60);
-                            const s = total % 60;
+                            const m = Math.floor(total / 60); const s = total % 60;
                             display.textContent = (m < 10 ? "0":"") + m + ":" + (s < 10 ? "0":"") + s;
                         }
                     }, 1000);
@@ -190,19 +204,30 @@
 
         function listenToOnlineUsers() {
             database.ref('online_users').on('value', (s) => {
-                const list = document.getElementById('statusList');
-                list.innerHTML = '';
+                const list = document.getElementById('statusList'); list.innerHTML = '';
                 if(!s.val()) return;
                 Object.values(s.val()).forEach(u => {
-                    let r = []; if(u.wesche) r.push("Wäsche"); if(u.mull) r.push("Müll");
+                    let r = []; if(u.wesche) r.push("Wäsche"); if(u.mull) r.push("Müll"); if(u.boden) r.push("Boden");
                     list.innerHTML += `<div><span class="text-[#1a3c34] font-black">${u.name}</span>: ${r.join(', ')}</div>`;
                 });
             });
         }
 
+        function startBodenCheck() {
+            setInterval(() => {
+                const now = new Date();
+                const cetTime = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(now);
+                if(cetTime === "14:00") {
+                    document.getElementById('bodenModal').classList.remove('hidden');
+                    document.getElementById('alarm-finished').play();
+                }
+            }, 60000);
+        }
+        function closeBoden() { document.getElementById('bodenModal').classList.add('hidden'); }
+
         function quickMull(type) {
             database.ref('mull_pozivi/' + userConfig.station).set({ 
-                station: userConfig.station, detail: type, notiz: "", sender: userConfig.name, 
+                station: userConfig.station, detail: type, sender: userConfig.name, 
                 time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
             });
         }
@@ -234,18 +259,11 @@
         function renderList(snapshot, elementId, path, hasRole) {
             const container = document.getElementById(elementId);
             if(!container || !hasRole) return;
-            
-            let basketCount = 0;
-            let hasUrgent = false;
-            container.innerHTML = '';
-
+            let basketCount = 0; let hasUrgent = false; container.innerHTML = '';
             if(snapshot.val()) {
                 snapshot.forEach(child => {
                     const item = child.val();
-                    if (!item.seen && item.detail === "Wäschekorb voll") {
-                        basketCount++;
-                        if (item.urgent) hasUrgent = true;
-                    }
+                    if (!item.seen && item.detail === "Wäschekorb voll") { basketCount++; if (item.urgent) hasUrgent = true; }
                     let sc = item.seen ? 'is-seen' : (item.urgent ? 'dringend-alert' : 'urgent-alert');
                     container.innerHTML += `<div class="bg-slate-50 p-3 border-l-4 border-[#1a3c34] flex justify-between items-center ${sc} text-[11px]">
                         <div><p class="font-black uppercase">${item.station}</p><p class="uppercase">${item.detail}</p>
@@ -253,8 +271,7 @@
                         <div class="flex gap-1"><button onclick="markAsSeen('${path}', '${child.key}')" class="bg-slate-200 p-2">👁️</button>
                         <button onclick="removeItem('${path}', '${child.key}')" class="bg-black text-white p-2">✔️</button></div></div>`;
                 });
-            } else { container.innerHTML = '<p class="text-slate-300 italic text-[10px] uppercase text-center">Keine Anfragen</p>'; }
-
+            } else { container.innerHTML = '<p class="text-slate-300 italic text-[10px] uppercase text-center w-full">Keine Anfragen</p>'; }
             if (elementId === 'wescheList') updateEfficiencyUI(basketCount, hasUrgent);
         }
 
@@ -283,3 +300,4 @@
     </script>
 </body>
 </html>
+
