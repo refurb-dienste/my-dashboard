@@ -14,8 +14,7 @@
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
         .is-seen { animation: none !important; opacity: 0.6; background-color: #e2e8f0 !important; border-left-color: #94a3b8 !important; }
         .timer-finished { background-color: #ef4444 !important; color: white !important; animation: pulse 1s infinite; border: 2px solid black !important; }
-        input, select, button { font-family: 'Courier New', Courier, monospace; font-weight: bold; }
-        
+        input, button { font-family: 'Courier New', Courier, monospace; font-weight: bold; }
         .eff-wait { background-color: #facc15; color: black; }
         .eff-go { background-color: #22c55e; color: white; }
         .eff-opti { background-color: #16a34a; color: white; border: 2px solid #1a3c34; }
@@ -25,27 +24,27 @@
 <body class="min-h-screen text-slate-900">
 
     <div id="loginScreen" class="fixed inset-0 bg-[#1a3c34] z-[100] flex items-center justify-center p-6">
-        <div class="bg-white p-10 rounded-none shadow-2xl max-w-md w-full text-center border-b-[12px] border-[#1a3c34]">
-            <h1 class="text-3xl font-black mb-2 text-slate-900 uppercase tracking-tighter">Aufbereitung</h1>
+        <div class="bg-white p-8 rounded-none shadow-2xl max-w-md w-full text-center border-b-[12px] border-[#1a3c34]">
+            <h1 class="text-3xl font-black mb-6 text-slate-900 uppercase tracking-tighter italic">Aufbereitung</h1>
             <div class="space-y-4 text-left">
-                <input type="text" id="userName" placeholder="NAME EINGEBEN" class="w-full bg-slate-100 border-2 border-slate-200 p-4 rounded-none outline-none focus:border-[#1a3c34]">
-                <select id="userStation" class="w-full bg-slate-100 border-2 border-slate-200 p-4 rounded-none outline-none focus:border-[#1a3c34]">
+                <input type="text" id="userName" placeholder="DEIN NAME" class="w-full bg-slate-100 border-2 border-slate-200 p-4 rounded-none outline-none focus:border-[#1a3c34] text-sm">
+                <select id="userStation" class="w-full bg-slate-100 border-2 border-slate-200 p-4 rounded-none outline-none focus:border-[#1a3c34] text-sm font-bold">
                     <option value="wks050">wks050</option><option value="wks051">wks051</option><option value="wks052">wks052</option>
                     <option value="wks053">wks053</option><option value="wks054">wks054</option><option value="wks055">wks055</option>
                     <option value="wks056">wks056</option><option value="wks057">wks057</option><option value="wks058">wks058</option><option value="wks059">wks059</option>
                 </select>
-                <div class="grid grid-cols-1 gap-2">
-                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-black">Wäschedienst</span></label>
-                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkMull" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-black">Müll-Dienst</span></label>
-                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer"><input type="checkbox" id="checkBoden" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-xs font-black">Bodendienst</span></label>
+                <div class="grid grid-cols-1 gap-2 mt-4">
+                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100"><input type="checkbox" id="checkWesche" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-[11px] font-black text-slate-700">🧺 Wäschedienst</span></label>
+                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100"><input type="checkbox" id="checkMull" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-[11px] font-black text-slate-700">🗑️ Müll-Dienst</span></label>
+                    <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100"><input type="checkbox" id="checkBoden" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-[11px] font-black text-slate-700">🧹 Bodendienst</span></label>
                 </div>
-                <button onclick="doLogin()" class="w-full bg-[#1a3c34] text-white p-5 rounded-none uppercase hover:bg-black transition-all font-black">Starten</button>
+                <button onclick="doLogin()" class="w-full bg-[#1a3c34] text-white p-5 rounded-none uppercase hover:bg-black transition-all font-black mt-4 shadow-lg">App Starten</button>
             </div>
         </div>
     </div>
 
     <div id="mainApp" class="hidden">
-        <header class="bg-white border-b-4 border-[#1a3c34] p-4 sticky top-0 z-50 text-slate-800">
+        <header class="bg-white border-b-4 border-[#1a3c34] p-4 sticky top-0 z-50 text-slate-800 shadow-md">
             <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 bg-[#1a3c34] text-white flex items-center justify-center text-xl font-black">A</div>
@@ -58,17 +57,18 @@
                         <button onclick="quickMull('Restmüll 🗑️')" class="bg-slate-700 text-white px-3 py-2 text-[10px] uppercase hover:bg-black">Restmüll</button>
                         <button onclick="quickMull('Papier 📄')" class="bg-blue-700 text-white px-3 py-2 text-[10px] uppercase hover:bg-blue-900">Papier</button>
                     </div>
-                    <select id="washType" class="p-2 rounded-none text-xs uppercase outline-none font-bold">
-                        <option value="Wäschekorb voll">🧺 Wäschekorb voll</option>
-                    </select>
+                    
+                    <button onclick="sendWash()" class="bg-white text-[#1a3c34] px-4 py-2 hover:bg-green-100 uppercase text-xs font-black flex items-center gap-2 italic">
+                        🧺 Wäschekorb voll
+                    </button>
+                    
                     <input type="text" id="userNotiz" placeholder="NOTIZ" class="p-2 rounded-none text-xs uppercase outline-none w-32 font-bold">
                     <label class="flex items-center bg-white/10 px-2 py-1 cursor-pointer text-white text-[10px] uppercase font-bold">
                         <input type="checkbox" id="isUrgent" class="mr-1 accent-red-500"> DRINGEND!
                     </label>
-                    <button onclick="smartSend()" class="bg-white text-[#1a3c34] px-4 py-2 hover:bg-green-100 uppercase text-xs font-black">Senden</button>
                 </div>
 
-                <div id="liveStatus" class="bg-slate-100 p-2 text-[9px] uppercase border border-slate-200 min-w-[150px]">
+                <div id="liveStatus" class="bg-slate-100 p-2 text-[9px] uppercase border border-slate-200 min-w-[180px] max-h-32 overflow-y-auto">
                     <p class="font-black border-b border-slate-300 mb-1">Live Status:</p>
                     <div id="statusList" class="space-y-1"></div>
                 </div>
@@ -77,30 +77,24 @@
 
         <main class="max-w-7xl mx-auto p-6">
             <div id="weschePanel" class="hidden mb-12">
-                <h2 class="text-xl uppercase font-black mb-4 border-b-4 border-[#1a3c34] inline-block">Wäschedienst Dashboard</h2>
-                <div id="efficiency-status" class="mb-4 p-4 text-center text-xs uppercase font-black bg-slate-100 text-slate-400">Warten...</div>
-                
+                <h2 class="text-xl uppercase font-black mb-4 border-b-4 border-[#1a3c34] inline-block">Wäschedienst Monitor</h2>
+                <div id="efficiency-status" class="mb-4 p-4 text-center text-xs uppercase font-black bg-slate-100 text-slate-400 border-2 border-dashed border-slate-200">Bereit...</div>
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <div class="lg:col-span-3 bg-white p-6 border-t-4 border-[#1a3c34] shadow-sm">
-                        <h3 class="text-sm uppercase mb-4 text-slate-400 tracking-widest">Offene Anfragen</h3>
+                        <h3 class="text-sm uppercase mb-4 text-slate-400 tracking-widest">Anfragen</h3>
                         <div id="wescheList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                     </div>
-                    
                     <div class="lg:col-span-1 flex flex-col gap-4">
-                        <h3 class="text-sm uppercase text-slate-400 tracking-widest text-center">Maschinenpark</h3>
                         <div id="timer-box-1" class="bg-white p-4 border-t-4 border-slate-200 text-center shadow-sm">
-                            <p class="text-[9px] uppercase mb-1">Waschmaschine 1</p>
-                            <div id="timer-val-1" class="text-2xl font-black mb-2">80:00</div>
+                            <p class="text-[9px] uppercase mb-1">Maschine 1</p><div id="timer-val-1" class="text-2xl font-black mb-2">80:00</div>
                             <button onclick="triggerTimer(1)" class="w-full bg-[#1a3c34] text-white py-2 text-[10px] uppercase hover:bg-black font-black">Start</button>
                         </div>
                         <div id="timer-box-2" class="bg-white p-4 border-t-4 border-slate-200 text-center shadow-sm">
-                            <p class="text-[9px] uppercase mb-1">Waschmaschine 2</p>
-                            <div id="timer-val-2" class="text-2xl font-black mb-2">80:00</div>
+                            <p class="text-[9px] uppercase mb-1">Maschine 2</p><div id="timer-val-2" class="text-2xl font-black mb-2">80:00</div>
                             <button onclick="triggerTimer(2)" class="w-full bg-[#1a3c34] text-white py-2 text-[10px] uppercase hover:bg-black font-black">Start</button>
                         </div>
                         <div id="timer-box-3" class="bg-white p-4 border-t-4 border-slate-200 text-center shadow-sm">
-                            <p class="text-[9px] uppercase mb-1">Waschmaschine 3</p>
-                            <div id="timer-val-3" class="text-2xl font-black mb-2">80:00</div>
+                            <p class="text-[9px] uppercase mb-1">Maschine 3</p><div id="timer-val-3" class="text-2xl font-black mb-2">80:00</div>
                             <button onclick="triggerTimer(3)" class="w-full bg-[#1a3c34] text-white py-2 text-[10px] uppercase hover:bg-black font-black">Start</button>
                         </div>
                     </div>
@@ -117,59 +111,57 @@
     <div id="bodenModal" class="fixed inset-0 bg-black/90 flex items-center justify-center hidden z-[200]">
         <div class="bg-white p-12 text-center max-w-lg border-b-[12px] border-[#1a3c34]">
             <h2 class="text-3xl font-black mb-4 uppercase text-[#1a3c34]">Bodendienst</h2>
-            <p class="text-slate-500 mb-8 font-bold text-xl uppercase">Boden jetzt reinigen!</p>
-            <button onclick="closeBoden()" class="bg-[#1a3c34] text-white px-12 py-5 text-xl uppercase font-black">Erledigt ✅</button>
+            <p class="text-slate-500 mb-8 font-bold text-xl uppercase italic">Boden jetzt reinigen!</p>
+            <button onclick="closeBoden()" class="bg-[#1a3c34] text-white px-12 py-5 text-xl uppercase font-black shadow-2xl">Erledigt ✅</button>
         </div>
     </div>
 
-    <audio id="alarm-finished" src="https://actions.google.com/sounds/v1/alarms/alarm_clock_beep.ogg"></audio>
-    <audio id="notif-sound" src="https://actions.google.com/sounds/v1/alerts/notification_simple-01.ogg"></audio>
-    <audio id="urgent-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-
     <script>
-        const firebaseConfig = {
-  apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ",
-  databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", 
-  authDomain: "dienste-fluxs.firebaseapp.com",
-  projectId: "dienste-fluxs",
-  storageBucket: "dienste-fluxs.firebasestorage.app",
-  messagingSenderId: "137594684055",
-  appId: "1:137594684055:web:2e2ddc1ed5ce8ff8f6dfd2"
-};
+        // FIREBASE CONFIG
+        const firebaseConfig = { apiKey: "...", databaseURL: "...", projectId: "...", appId: "..." };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
         let userConfig = { name: "", station: "", wesche: false, mull: false, boden: false };
-        let firstLoad = { wesche: true, mull: true };
         let activeIntervals = { 1: null, 2: null, 3: null };
 
         function doLogin() {
             const name = document.getElementById('userName').value;
             const station = document.getElementById('userStation').value;
-            if(!name) return alert("NAME EINGEBEN!");
-            
-            userConfig = { 
-                name, station, 
-                wesche: document.getElementById('checkWesche').checked, 
-                mull: document.getElementById('checkMull').checked,
-                boden: document.getElementById('checkBoden').checked 
-            };
-
+            if(!name) return alert("BITTE NAMEN EINGEBEN!");
+            userConfig = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
             const onlineRef = database.ref('online_users/' + name + '_' + station);
-            onlineRef.set(userConfig);
-            onlineRef.onDisconnect().remove();
-
-            document.getElementById('displayUser').innerText = `USER: ${name} | ${station}`;
+            onlineRef.set(userConfig); onlineRef.onDisconnect().remove();
+            document.getElementById('displayUser').innerText = `MA: ${name} | ${station}`;
             document.getElementById('activeStationDisplay').innerText = station;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            
             if(userConfig.wesche) document.getElementById('weschePanel').classList.remove('hidden');
             if(userConfig.mull) document.getElementById('mullPanel').classList.remove('hidden');
-            
-            syncTimers();
-            listenToOnlineUsers();
+            syncTimers(); listenToOnlineUsers();
             if(userConfig.boden) startBodenCheck();
+        }
+
+        function listenToOnlineUsers() {
+            database.ref('online_users').on('value', (s) => {
+                const list = document.getElementById('statusList'); list.innerHTML = '';
+                if(!s.val()) return;
+                Object.values(s.val()).forEach(u => {
+                    let r = []; if(u.wesche) r.push("Wäsche"); if(u.mull) r.push("Müll"); if(u.boden) r.push("Boden");
+                    if(r.length === 0) r.push("Melder");
+                    list.innerHTML += `<div class="border-b border-slate-200 pb-1 text-[8px]"><span class="text-[#1a3c34] font-black">${u.name}</span> <span class="bg-slate-200 px-1 rounded">${u.station}</span>: <span class="text-slate-500">${r.join(', ')}</span></div>`;
+                });
+            });
+        }
+
+        function sendWash() {
+            const notiz = document.getElementById('userNotiz').value;
+            const urgent = document.getElementById('isUrgent').checked;
+            database.ref('ves_pozivi/' + userConfig.station).set({ 
+                station: userConfig.station, detail: "Wäschekorb voll", notiz, urgent,
+                sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
+            });
+            document.getElementById('isUrgent').checked = false; document.getElementById('userNotiz').value = ""; 
         }
 
         function triggerTimer(id) {
@@ -188,27 +180,12 @@
                     activeIntervals[id] = setInterval(() => {
                         const diff = data.endTime - Date.now();
                         if(diff <= 0) {
-                            clearInterval(activeIntervals[id]);
-                            display.textContent = "FERTIG!";
-                            box.classList.add('timer-finished');
-                            if(userConfig.wesche) document.getElementById('alarm-finished').play();
+                            clearInterval(activeIntervals[id]); display.textContent = "FERTIG!"; box.classList.add('timer-finished');
                         } else {
-                            const total = Math.floor(diff / 1000);
-                            const m = Math.floor(total / 60); const s = total % 60;
+                            const total = Math.floor(diff / 1000); const m = Math.floor(total / 60); const s = total % 60;
                             display.textContent = (m < 10 ? "0":"") + m + ":" + (s < 10 ? "0":"") + s;
                         }
                     }, 1000);
-                });
-            });
-        }
-
-        function listenToOnlineUsers() {
-            database.ref('online_users').on('value', (s) => {
-                const list = document.getElementById('statusList'); list.innerHTML = '';
-                if(!s.val()) return;
-                Object.values(s.val()).forEach(u => {
-                    let r = []; if(u.wesche) r.push("Wäsche"); if(u.mull) r.push("Müll"); if(u.boden) r.push("Boden");
-                    list.innerHTML += `<div><span class="text-[#1a3c34] font-black">${u.name}</span>: ${r.join(', ')}</div>`;
                 });
             });
         }
@@ -217,10 +194,7 @@
             setInterval(() => {
                 const now = new Date();
                 const cetTime = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' }).format(now);
-                if(cetTime === "14:00") {
-                    document.getElementById('bodenModal').classList.remove('hidden');
-                    document.getElementById('alarm-finished').play();
-                }
+                if(cetTime === "14:00") document.getElementById('bodenModal').classList.remove('hidden');
             }, 60000);
         }
         function closeBoden() { document.getElementById('bodenModal').classList.add('hidden'); }
@@ -232,29 +206,8 @@
             });
         }
 
-        function smartSend() {
-            const type = document.getElementById('washType').value;
-            const notiz = document.getElementById('userNotiz').value;
-            const urgent = document.getElementById('isUrgent').checked;
-            database.ref('ves_pozivi/' + userConfig.station).set({ 
-                station: userConfig.station, detail: type, notiz, urgent,
-                sender: userConfig.name, time: new Date().toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}), seen: false
-            });
-            document.getElementById('isUrgent').checked = false;
-            document.getElementById('userNotiz').value = ""; 
-        }
-
-        database.ref('ves_pozivi/').on('value', (s) => handleNewData(s, 'wescheList', 'ves_pozivi', userConfig.wesche, 'wesche'));
-        database.ref('mull_pozivi/').on('value', (s) => handleNewData(s, 'mullList', 'mull_pozivi', userConfig.mull, 'mull'));
-
-        function handleNewData(snapshot, elementId, path, hasRole, typeKey) {
-            if(!firstLoad[typeKey] && snapshot.val() && hasRole) {
-                let u = false; snapshot.forEach(c => { if(c.val().urgent && !c.val().seen) u = true; });
-                if(u) document.getElementById('urgent-sound').play(); else document.getElementById('notif-sound').play();
-            }
-            firstLoad[typeKey] = false;
-            renderList(snapshot, elementId, path, hasRole);
-        }
+        database.ref('ves_pozivi/').on('value', (s) => renderList(s, 'wescheList', 'ves_pozivi', userConfig.wesche));
+        database.ref('mull_pozivi/').on('value', (s) => renderList(s, 'mullList', 'mull_pozivi', userConfig.mull));
 
         function renderList(snapshot, elementId, path, hasRole) {
             const container = document.getElementById(elementId);
@@ -266,8 +219,7 @@
                     if (!item.seen && item.detail === "Wäschekorb voll") { basketCount++; if (item.urgent) hasUrgent = true; }
                     let sc = item.seen ? 'is-seen' : (item.urgent ? 'dringend-alert' : 'urgent-alert');
                     container.innerHTML += `<div class="bg-slate-50 p-3 border-l-4 border-[#1a3c34] flex justify-between items-center ${sc} text-[11px]">
-                        <div><p class="font-black uppercase">${item.station}</p><p class="uppercase">${item.detail}</p>
-                        <p class="text-[8px] text-slate-400 mt-1">${item.time}</p></div>
+                        <div><p class="font-black uppercase">${item.station}</p><p class="uppercase">${item.detail}</p><p class="text-[8px] text-slate-400 mt-1">${item.time} - ${item.notiz}</p></div>
                         <div class="flex gap-1"><button onclick="markAsSeen('${path}', '${child.key}')" class="bg-slate-200 p-2">👁️</button>
                         <button onclick="removeItem('${path}', '${child.key}')" class="bg-black text-white p-2">✔️</button></div></div>`;
                 });
@@ -277,22 +229,11 @@
 
         function updateEfficiencyUI(count, urgent) {
             const statusDiv = document.getElementById('efficiency-status');
-            if (urgent) {
-                statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-urgent';
-                statusDiv.innerText = '🚨 SOFORT LOS! (DRINGENDE ANFRAGE)';
-            } else if (count >= 9) {
-                statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-opti';
-                statusDiv.innerText = `🔥 OPTIMAL! (${count} KÖRBE) - ALLE 3 MASCHINEN VOLL`;
-            } else if (count >= 5) {
-                statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-go';
-                statusDiv.innerText = `✅ EINKAUFSWAGEN VOLL (${count} KÖRBE) - JETZT ABHOLEN`;
-            } else if (count > 0) {
-                statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-wait';
-                statusDiv.innerText = `⏳ WARTEN... (${count}/5 KÖRBE FÜR EINEN VOLLEN WAGEN)`;
-            } else {
-                statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black bg-slate-100 text-slate-400';
-                statusDiv.innerText = 'ALLE KÖRBE SIND LEER';
-            }
+            if (urgent) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-urgent'; statusDiv.innerText = '🚨 SOFORT LOS! (DRINGENDE ANFRAGE)'; }
+            else if (count >= 9) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-opti'; statusDiv.innerText = `🔥 OPTIMAL! (${count} KÖRBE) - ALLE 3 MASCHINEN VOLL`; }
+            else if (count >= 5) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-go'; statusDiv.innerText = `✅ EINKAUFSWAGEN VOLL (${count} KÖRBE) - JETZT ABHOLEN`; }
+            else if (count > 0) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-wait'; statusDiv.innerText = `⏳ WARTEN... (${count}/5 KÖRBE FÜR EINEN VOLLEN WAGEN)`; }
+            else { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black bg-slate-100 text-slate-400'; statusDiv.innerText = 'ALLE KÖRBE SIND LEER'; }
         }
 
         function markAsSeen(p, id) { database.ref(p + '/' + id).update({ seen: true }); }
@@ -300,4 +241,3 @@
     </script>
 </body>
 </html>
-
