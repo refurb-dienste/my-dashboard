@@ -38,7 +38,7 @@
                     <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100"><input type="checkbox" id="checkMull" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-[11px] font-black text-slate-700">🗑️ Müll-Dienst</span></label>
                     <label class="flex items-center p-3 bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100"><input type="checkbox" id="checkBoden" class="w-5 h-5 accent-[#1a3c34]"><span class="ml-4 uppercase text-[11px] font-black text-slate-700">🧹 Bodendienst</span></label>
                 </div>
-                <button onclick="doLogin()" class="w-full bg-[#1a3c34] text-white p-5 rounded-none uppercase hover:bg-black transition-all font-black mt-4 shadow-lg">App Starten</button>
+                <button onclick="doLogin()" class="w-full bg-[#1a3c34] text-white p-5 rounded-none uppercase hover:bg-black transition-all font-black mt-4 shadow-lg tracking-widest text-xl">Start</button>
             </div>
         </div>
     </div>
@@ -57,11 +57,7 @@
                         <button onclick="quickMull('Restmüll 🗑️')" class="bg-slate-700 text-white px-3 py-2 text-[10px] uppercase hover:bg-black">Restmüll</button>
                         <button onclick="quickMull('Papier 📄')" class="bg-blue-700 text-white px-3 py-2 text-[10px] uppercase hover:bg-blue-900">Papier</button>
                     </div>
-                    
-                    <button onclick="sendWash()" class="bg-white text-[#1a3c34] px-4 py-2 hover:bg-green-100 uppercase text-xs font-black flex items-center gap-2 italic">
-                        🧺 Wäschekorb voll
-                    </button>
-                    
+                    <button onclick="sendWash()" class="bg-white text-[#1a3c34] px-4 py-2 hover:bg-green-100 uppercase text-xs font-black flex items-center gap-2 italic">🧺 Wäschekorb voll</button>
                     <input type="text" id="userNotiz" placeholder="NOTIZ" class="p-2 rounded-none text-xs uppercase outline-none w-32 font-bold">
                     <label class="flex items-center bg-white/10 px-2 py-1 cursor-pointer text-white text-[10px] uppercase font-bold">
                         <input type="checkbox" id="isUrgent" class="mr-1 accent-red-500"> DRINGEND!
@@ -219,11 +215,17 @@
         function renderList(snapshot, elementId, path, hasRole) {
             const container = document.getElementById(elementId);
             if(!container || !hasRole) return;
-            let basketCount = 0; let hasUrgent = false; container.innerHTML = '';
+            let seenBaskets = 0; // GEÄNDERT: Zählt nur gesehene Körbe
+            let hasUrgent = false; 
+            container.innerHTML = '';
+            
             if(snapshot.val()) {
                 snapshot.forEach(child => {
                     const item = child.val();
-                    if (!item.seen && item.detail === "Wäschekorb voll") { basketCount++; if (item.urgent) hasUrgent = true; }
+                    // Logik: Zähle für Effizienz nur, wenn es Wäsche ist UND auf "gesehen" geklickt wurde
+                    if (item.seen && item.detail === "Wäschekorb voll") { seenBaskets++; }
+                    if (!item.seen && item.urgent) { hasUrgent = true; } // Dringend-Alarm nur bei neuen
+                    
                     let sc = item.seen ? 'is-seen' : (item.urgent ? 'dringend-alert' : 'urgent-alert');
                     container.innerHTML += `<div class="bg-slate-50 p-3 border-l-4 border-[#1a3c34] flex justify-between items-center ${sc} text-[11px]">
                         <div><p class="font-black uppercase">${item.station}</p><p class="uppercase">${item.detail}</p><p class="text-[8px] text-slate-400 mt-1">${item.time} - ${item.notiz}</p></div>
@@ -231,16 +233,18 @@
                         <button onclick="removeItem('${path}', '${child.key}')" class="bg-black text-white p-2">✔️</button></div></div>`;
                 });
             } else { container.innerHTML = '<p class="text-slate-300 italic text-[10px] uppercase text-center w-full">Keine Anfragen</p>'; }
-            if (elementId === 'wescheList') updateEfficiencyUI(basketCount, hasUrgent);
+            
+            if (elementId === 'wescheList') updateEfficiencyUI(seenBaskets, hasUrgent);
         }
 
         function updateEfficiencyUI(count, urgent) {
             const statusDiv = document.getElementById('efficiency-status');
+            // GEÄNDERT: Limit ist jetzt 6
             if (urgent) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-urgent'; statusDiv.innerText = '🚨 SOFORT LOS! (DRINGENDE ANFRAGE)'; }
-            else if (count >= 9) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-opti'; statusDiv.innerText = `🔥 OPTIMAL! (${count} KÖRBE) - ALLE 3 MASCHINEN VOLL`; }
-            else if (count >= 5) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-go'; statusDiv.innerText = `✅ EINKAUFSWAGEN VOLL (${count} KÖRBE) - JETZT ABHOLEN`; }
-            else if (count > 0) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-wait'; statusDiv.innerText = `⏳ WARTEN... (${count}/5 KÖRBE FÜR EINEN VOLLEN WAGEN)`; }
-            else { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black bg-slate-100 text-slate-400'; statusDiv.innerText = 'ALLE KÖRBE SIND LEER'; }
+            else if (count >= 12) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-opti'; statusDiv.innerText = `🔥 MAXIMUM! (${count} KÖRBE) - ALLE MASCHINEN BELEGEN`; }
+            else if (count >= 6) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-go'; statusDiv.innerText = `✅ WAGEN VOLL (${count}/6 KÖRBE) - JETZT ABHOLEN`; }
+            else if (count > 0) { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black eff-wait'; statusDiv.innerText = `⏳ IN ARBEIT... (${count}/6 KÖRBE BESTÄTIGT)`; }
+            else { statusDiv.className = 'mb-4 p-4 text-center text-xs uppercase font-black bg-slate-100 text-slate-400'; statusDiv.innerText = 'KEINE BESTÄTIGTEN KÖRBE'; }
         }
 
         function markAsSeen(p, id) { database.ref(p + '/' + id).update({ seen: true }); }
