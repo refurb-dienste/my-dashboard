@@ -3,252 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WOCHENDIENST_REFURB </title>
+    <title>WOCHENDIENST_MASTER v6.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
-        :root { --wald: #1a2f23; --dunkel: #0f1a14; --hellgruen: #4ade80; --beige: #f5f5dc; --orange: #f97316; }
-        body { font-family: 'JetBrains Mono', monospace; background-color: var(--dunkel); color: var(--beige); font-size: 16px; overflow-x: hidden; }
-        .card-dark { background-color: var(--wald); border: 1px solid rgba(245, 245, 220, 0.15); }
-        .btn-minimal { background-color: var(--beige); color: var(--dunkel); text-transform: uppercase; font-weight: 800; cursor: pointer; transition: 0.2s; }
-        .btn-minimal:hover { background-color: var(--hellgruen); transform: scale(1.02); }
-        .btn-minimal:disabled { opacity: 0.2; cursor: not-allowed; }
-        input, select { background: rgba(0,0,0,0.4) !important; border: 2px solid rgba(255,255,255,0.1) !important; color: white !important; font-weight: bold; }
+        :root { --wald: #1a2f23; --dunkel: #0f1a14; --hellgruen: #4ade80; --beige: #f5f5dc; }
+        body { font-family: 'JetBrains Mono', monospace; background-color: var(--dunkel); color: var(--beige); font-size: 14px; overflow-x: hidden; }
+        .card-dark { background-color: var(--wald); border: 1px solid rgba(245, 245, 220, 0.1); }
+        .btn-minimal { background-color: var(--beige); color: var(--dunkel); text-transform: uppercase; font-weight: 800; }
         .notiz-alarm { background-color: #fef08a; color: #1a2f23; border-left: 10px solid #f97316; }
         .blink { animation: blinker 1.5s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.5; } }
+        ::-webkit-scrollbar { height: 4px; width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--hellgruen); }
     </style>
 </head>
-<body class="min-h-screen">
+<body>
 
     <div id="loginScreen" class="fixed inset-0 bg-[#0f1a14] z-[600] flex items-center justify-center p-4">
         <div class="w-full max-w-md p-10 border-2 border-hellgruen/20 bg-[#1a2f23] shadow-2xl">
-            <div class="mb-10 text-center">
-                <h1 class="text-3xl font-black tracking-tighter uppercase italic text-hellgruen">Wochendienst</h1>
-                <p class="text-[11px] tracking-[0.4em] uppercase opacity-50">Refurb_System v5.3</p>
-            </div>
-            <div class="space-y-6">
-                <input type="text" id="userName" placeholder="VORNAME" class="w-full p-5 outline-none uppercase text-lg" oninput="checkDienstplanLock()">
-                <p id="lockHint" class="text-xs text-yellow-400 font-bold uppercase hidden">⚠️ Fest eingeteilter Dienst</p>
-                <select id="userStation" class="w-full p-5 outline-none uppercase text-lg"></select>
-                <div class="grid grid-cols-1 gap-3 py-6 border-y border-white/10">
-                    <label class="flex items-center space-x-4 cursor-pointer"><input type="checkbox" id="checkWesche" class="w-6 h-6"> <span class="font-bold uppercase">🧺 Wäsche</span></label>
-                    <label class="flex items-center space-x-4 cursor-pointer"><input type="checkbox" id="checkMull" class="w-6 h-6"> <span class="font-bold uppercase">🗑️ Müll</span></label>
-                    <label class="flex items-center space-x-4 cursor-pointer text-blue-400"><input type="checkbox" id="checkBoden" class="w-6 h-6"> <span class="font-bold uppercase">🧹 Boden</span></label>
+            <h1 class="text-3xl font-black text-center text-hellgruen uppercase mb-8 italic">Wochendienst</h1>
+            <div class="space-y-4">
+                <input type="text" id="userName" placeholder="VORNAME" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none uppercase font-bold" oninput="checkLock()">
+                <p id="lockMsg" class="text-[10px] text-yellow-400 font-bold uppercase hidden">⚠️ Dienst fest eingeteilt</p>
+                <select id="userStation" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none font-bold"></select>
+                <div class="grid grid-cols-1 gap-2 py-4 border-y border-white/10 text-sm">
+                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkWesche" class="w-5 h-5"> <span class="font-bold uppercase">🧺 Wäsche</span></label>
+                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkMull" class="w-5 h-5 text-orange-500"> <span class="font-bold uppercase text-orange-400">🗑️ Müll</span></label>
+                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkBoden" class="w-5 h-5 text-blue-500"> <span class="font-bold uppercase text-blue-400">🧹 Boden</span></label>
                 </div>
-                <button onclick="doLogin()" class="w-full btn-minimal p-6 text-lg tracking-widest">Einloggen</button>
+                <button onclick="doLogin()" class="w-full btn-minimal p-5 tracking-widest hover:bg-hellgruen transition">Starten</button>
             </div>
         </div>
     </div>
 
-    <div id="mainApp" class="hidden">
-        <header class="border-b-2 border-white/10 p-5 sticky top-0 bg-[#0f1a14]/98 backdrop-blur-md z-50">
-            <div class="max-w-7xl mx-auto flex flex-col lg:flex-row justify-between items-center gap-6">
-                <div class="flex items-center gap-5">
-                    <div class="text-2xl font-black border-4 border-hellgruen px-3 text-hellgruen cursor-pointer hover:bg-hellgruen hover:text-dunkel transition" onclick="adminDienstplan()">R</div>
-                    <div>
-                        <p id="displayUser" class="text-lg font-black uppercase text-white leading-none"></p>
-                        <p id="displayStation" class="text-[10px] opacity-50 uppercase tracking-widest mt-1"></p>
+    <div id="mainApp" class="hidden flex flex-col min-h-screen">
+        <header class="border-b border-white/10 p-4 bg-[#0f1a14]/95 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto flex justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="text-xl font-black border-2 border-hellgruen px-2 text-hellgruen cursor-pointer" onclick="adminMenu()">R</div>
+                    <div class="leading-tight">
+                        <p id="displayUser" class="font-black uppercase text-xs text-white"></p>
+                        <p id="displayStation" class="text-[9px] opacity-40 uppercase"></p>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="flex flex-col">
-                        <input type="text" id="userNotiz" placeholder="WAS GEWASCHEN?" class="p-3 text-xs w-56 uppercase outline-none ring-2 ring-hellgruen/20 focus:ring-hellgruen">
-                        <button onclick="sendOnlyNote()" class="text-[9px] bg-white/10 hover:bg-white/20 mt-1 uppercase py-1 font-bold">Nur Info senden</button>
-                    </div>
-                    <button onclick="sendWash()" class="bg-hellgruen text-dunkel px-5 py-3 font-black uppercase shadow-lg hover:brightness-110">🧺 Korb</button>
-                    <div class="flex gap-1">
-                        <button id="btn-mull-rest" onclick="sendMull('REST')" class="bg-orange-600 text-white px-4 py-3 font-black uppercase text-xs">Rest</button>
-                        <button id="btn-mull-papier" onclick="sendMull('PAPIER')" class="bg-blue-600 text-white px-4 py-3 font-black uppercase text-xs">Papier</button>
-                    </div>
-                    <button onclick="logout()" class="ml-4 opacity-20 hover:opacity-100 font-bold">X</button>
+                
+                <div id="onlineList" class="hidden md:flex gap-2 overflow-x-auto py-1 px-4 border-x border-white/5 max-w-lg"></div>
+
+                <div class="flex items-center gap-2">
+                    <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-2 text-[10px] w-24 bg-black/40 border border-white/10 text-white outline-none uppercase">
+                    <button onclick="sendOnlyNote()" class="text-[9px] uppercase opacity-40 hover:opacity-100">Info</button>
+                    <button id="btnKorb" onclick="sendWash()" class="bg-hellgruen text-dunkel px-3 py-2 font-black text-[10px] uppercase">Korb voll</button>
+                    <button id="btnRest" onclick="sendMull('REST')" class="bg-orange-600 px-3 py-2 font-black text-[10px] uppercase">Rest</button>
+                    <button id="btnPapier" onclick="sendMull('PAPIER')" class="bg-blue-600 px-3 py-2 font-black text-[10px] uppercase">Papier</button>
+                    <button onclick="logout()" class="ml-2 opacity-20 hover:opacity-100 font-bold">X</button>
                 </div>
             </div>
         </header>
 
-        <div id="alarm-container" class="max-w-7xl mx-auto px-4 mt-4 space-y-3"></div>
+        <div id="alarmArea" class="max-w-7xl mx-auto p-4 w-full"></div>
 
-        <main class="max-w-7xl mx-auto p-4 lg:p-8 space-y-10">
-            <div id="notizMonitor" class="hidden notiz-alarm p-8 shadow-2xl">
-                <h4 class="text-xs font-black uppercase mb-4 opacity-60 tracking-widest">📢 Aktuelle Meldungen:</h4>
-                <div id="notizList" class="space-y-4"></div>
-            </div>
-
-            <div id="weschePanel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-10">
-                <div class="lg:col-span-8 card-dark p-8">
-                    <h3 class="text-xs uppercase opacity-50 mb-6 font-black border-b border-white/10 pb-3 italic text-hellgruen">Offene Abholungen</h3>
-                    <div id="wescheList" class="grid grid-cols-2 md:grid-cols-3 gap-5"></div>
+        <main class="flex-grow max-w-7xl mx-auto p-4 md:p-8 w-full space-y-6">
+            <div id="weschePanel" class="hidden space-y-6">
+                <div id="notizMonitor" class="hidden notiz-alarm p-4 shadow-lg text-sm font-bold uppercase">
+                    <div id="notizList" class="space-y-1"></div>
                 </div>
-                <div class="lg:col-span-4 space-y-6">
-                    <h3 class="text-xs uppercase opacity-50 text-center font-black">Geräte-Status</h3>
-                    <div id="timerSection" class="space-y-4"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 card-dark p-6">
+                        <h3 class="text-[10px] font-black opacity-30 uppercase mb-4 italic">Offene Abholungen</h3>
+                        <div id="wescheList" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+                    </div>
+                    <div id="timerSection" class="space-y-6"></div>
                 </div>
-            </div>
-
-            <div id="mullPanel" class="hidden card-dark p-8 border-orange-500/30 shadow-xl">
-                <h3 class="text-xs uppercase opacity-50 mb-6 font-black border-b border-white/10 pb-3 text-orange-500 italic tracking-widest">Müll-Logistik</h3>
-                <div id="mullList" class="grid grid-cols-2 md:grid-cols-5 gap-4"></div>
             </div>
             
-            <div id="defaultPanel" class="text-center py-32 opacity-10 uppercase tracking-[15px] font-black text-2xl italic">System_Standby</div>
+            <div id="mullPanel" class="hidden card-dark p-6">
+                <h3 class="text-[10px] font-black opacity-30 uppercase mb-4 italic text-orange-500">Mülldienst</h3>
+                <div id="mullList" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-bold uppercase"></div>
+            </div>
         </main>
+
+        <footer id="nextWeekDisplay" class="hidden bg-black/60 p-2 text-center text-[9px] uppercase tracking-widest border-t border-white/5 opacity-50"></footer>
     </div>
 
     <script>
         const firebaseConfig = { apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ", databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", projectId: "dienste-fluxs" };
-        firebase.initializeApp(firebaseConfig); const database = firebase.database();
-        let userConfig = null; let activeIntervals = {}; let originalTitle = "WOCHENDIENST-REFURB"; let blinkInterval = null;
-        const groups = { "G1": ["WKS050", "WKS051", "WKS052"], "G2": ["WKS053", "WKS054", "WKS055", "WKS056"], "G3": ["WKS057", "WKS058", "WKS059"] };
+        firebase.initializeApp(firebaseConfig); const db = firebase.database();
+        let user = null; let activeTimers = {};
 
         window.onload = () => {
             const sel = document.getElementById('userStation');
             for(let i=50; i<=59; i++) sel.innerHTML += `<option value="WKS0${i}">WKS0${i}</option>`;
-            const saved = localStorage.getItem('refurb_session');
-            if (saved) { userConfig = JSON.parse(saved).config; startApp(); }
-            setInterval(() => {
-                if(!userConfig || !userConfig.boden) return;
-                const now = new Date();
-                const container = document.getElementById('alarm-container');
-                if(now.getHours() === 14 && now.getMinutes() === 0) {
-                    if(!document.getElementById('boden-alert')) container.innerHTML += `<div id="boden-alert" class="p-6 bg-blue-600 text-white font-black text-center animate-bounce shadow-2xl uppercase text-xl border-4 border-white">🚨 BODENDIENST STARTEN (14:00)!</div>`;
-                }
-            }, 60000);
-        };
+            const saved = localStorage.getItem('refurb_v6.8');
+            if(saved) { user = JSON.parse(saved); startApp(); }
+        }
 
-        function checkDienstplanLock() {
+        function checkLock() {
             const n = document.getElementById('userName').value.trim().toUpperCase();
-            database.ref('global/dienstplan/mapping').once('value', s => {
+            db.ref('v6/mapping').once('value', s => {
                 const map = s.val() || {};
-                const wB = document.getElementById('checkWesche'), mB = document.getElementById('checkMull'), bB = document.getElementById('checkBoden');
+                const w = document.getElementById('checkWesche'), m = document.getElementById('checkMull'), b = document.getElementById('checkBoden');
                 if(map[n]) {
-                    wB.checked = map[n].includes("WÄSCHE"); mB.checked = map[n].includes("MÜLL"); bB.checked = map[n].includes("BODEN");
-                    wB.disabled = mB.disabled = bB.disabled = true; document.getElementById('lockHint').classList.remove('hidden');
-                } else { wB.disabled = mB.disabled = bB.disabled = false; document.getElementById('lockHint').classList.add('hidden'); }
+                    w.checked = map[n].includes("WÄSCHE"); m.checked = map[n].includes("MÜLL"); b.checked = map[n].includes("BODEN");
+                    w.disabled = m.disabled = b.disabled = true; document.getElementById('lockMsg').classList.remove('hidden');
+                } else { w.disabled = m.disabled = b.disabled = false; document.getElementById('lockMsg').classList.add('hidden'); }
             });
         }
 
         function doLogin() {
-            const n = document.getElementById('userName').value.trim().toUpperCase(); if(!n) return;
-            userConfig = { name: n, station: document.getElementById('userStation').value, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
-            localStorage.setItem('refurb_session', JSON.stringify({time: Date.now(), config: userConfig}));
+            const name = document.getElementById('userName').value.trim().toUpperCase();
+            if(!name) return;
+            user = { name: name, station: document.getElementById('userStation').value, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
+            localStorage.setItem('refurb_v6.8', JSON.stringify(user));
+            updatePresence();
             startApp();
+        }
+
+        function updatePresence() {
+            if(!user) return;
+            let d = ""; if(user.wesche) d+="🧺"; if(user.mull) d+="🗑️"; if(user.boden) d+="🧹";
+            db.ref('v6/presence/' + user.name).set({ station: user.station, services: d, time: Date.now() });
         }
 
         function startApp() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            document.getElementById('displayUser').innerText = userConfig.name;
-            document.getElementById('displayStation').innerText = `BEREICH: ${userConfig.station}`;
-            if(userConfig.wesche) document.getElementById('weschePanel').classList.remove('hidden');
-            if(userConfig.mull) document.getElementById('mullPanel').classList.remove('hidden');
-            if(userConfig.wesche || userConfig.mull || userConfig.boden) document.getElementById('defaultPanel').classList.add('hidden');
-            syncData();
+            document.getElementById('displayUser').innerText = user.name;
+            document.getElementById('displayStation').innerText = user.station;
+            if(user.wesche) document.getElementById('weschePanel').classList.remove('hidden');
+            if(user.mull) document.getElementById('mullPanel').classList.remove('hidden');
+            updatePresence();
+            sync();
         }
 
-        function sendWash() {
-            const note = document.getElementById('userNotiz').value.trim();
-            database.ref('ves_pozivi/' + Date.now()).set({ station: userConfig.station, user: userConfig.name, notiz: note || null, type: 'KORB' });
-            document.getElementById('userNotiz').value = "";
-        }
-
-        function sendOnlyNote() {
-            const note = document.getElementById('userNotiz').value.trim();
-            if(!note) return;
-            database.ref('ves_pozivi/' + Date.now()).set({ station: userConfig.station, user: userConfig.name, notiz: note, type: 'INFO_ONLY' });
-            document.getElementById('userNotiz').value = "";
-        }
-
-        function sendMull(typ) {
-            const group = Object.keys(groups).find(key => groups[key].includes(userConfig.station));
-            database.ref(`mull_pozivi/${group}_${typ}`).set({ station: userConfig.station, user: userConfig.name, type: typ, time: Date.now() });
-            localStorage.setItem(`lock_${typ}`, Date.now());
-            updateMullButtons();
-        }
-
-        function updateMullButtons() {
-            ['REST', 'PAPIER'].forEach(t => {
-                const last = localStorage.getItem(`lock_${t}`);
-                const btn = document.getElementById(`btn-mull-${t.toLowerCase()}`);
-                if(last && (Date.now() - last < 1800000)) { btn.disabled = true; btn.innerText = "WAIT"; }
-                else { btn.disabled = false; btn.innerText = t; }
-            });
-        }
-
-        function syncData() {
-            database.ref('ves_pozivi').on('value', s => {
-                const list = document.getElementById('wescheList'), nl = document.getElementById('notizList');
-                if(list) list.innerHTML = ''; if(nl) nl.innerHTML = '';
-                let vC = 0, hasN = false;
-                s.forEach(c => {
-                    const i = c.val(); if(i.type !== 'INFO_ONLY') vC++;
-                    if(i.notiz && (userConfig.wesche || userConfig.mull || userConfig.boden)) {
-                        hasN = true;
-                        nl.innerHTML += `<div class="flex justify-between items-center bg-black/10 p-5 border-b-2 border-orange-500 font-black uppercase text-base">
-                            <span>${i.type==='INFO_ONLY'?'📢':'🛠️'} ${i.station}: ${i.notiz}</span>
-                            <button onclick="database.ref('ves_pozivi/${c.key}').update({notiz: null})" class="bg-dunkel text-white px-6 py-2">X</button></div>`;
-                    }
-                    if(userConfig.wesche && list && i.type !== 'INFO_ONLY') {
-                        list.innerHTML += `<div class="p-6 card-dark border-l-8 border-hellgruen font-black uppercase relative shadow-lg text-lg">
-                            ${i.station}<br><span class="opacity-30 text-[10px] font-bold">${i.user}</span>
-                            <button onclick="database.ref('ves_pozivi/${c.key}').remove()" class="absolute top-2 right-2 bg-hellgruen text-dunkel rounded-full w-8 h-8 flex items-center justify-center text-xl">✓</button></div>`;
-                    }
+        function sync() {
+            db.ref('v6/presence').on('value', s => {
+                const list = document.getElementById('onlineList'); list.innerHTML = '';
+                s.forEach(snap => {
+                    const p = snap.val();
+                    list.innerHTML += `<div class="bg-white/5 px-2 py-1 rounded text-[9px] font-bold border border-white/10 whitespace-nowrap">${snap.key} @ ${p.station} ${p.services || ''}</div>`;
                 });
-                document.getElementById('notizMonitor').classList.toggle('hidden', !hasN);
-                checkWashAlarm(vC);
+                list.classList.toggle('hidden', s.numChildren() === 0);
             });
 
-            database.ref('mull_pozivi').on('value', s => {
+            db.ref('v6/nextWeek').on('value', s => {
+                const d = s.val(); const f = document.getElementById('nextWeekDisplay');
+                if(!d) { f.classList.add('hidden'); return; }
+                const now = new Date(); if(now.getDay() === 1 && now.getHours() >= 6) { db.ref('v6/nextWeek').remove(); return; }
+                f.classList.remove('hidden'); f.innerText = `Nächste Woche: 🧺 ${d.Wäsche || '-'} | 🗑️ ${d.Müll || '-'} | 🧹 ${d.Boden || '-'}`;
+            });
+
+            db.ref('v6/wash').on('value', s => {
+                const list = document.getElementById('wescheList'); const nList = document.getElementById('notizList');
+                list.innerHTML = ''; nList.innerHTML = ''; let count = 0; let hasNote = false;
+                s.forEach(snap => {
+                    const i = snap.val();
+                    if(i.type === 'KORB') { count++; if(user.wesche) list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase">${i.station}<br><span class="opacity-30 text-[8px]">${i.user}</span><button onclick="db.ref('v6/wash/${snap.key}').remove()" class="absolute right-2 top-2 font-black text-hellgruen">✓</button></div>`; }
+                    if(i.note && user.wesche) { hasNote = true; nList.innerHTML += `<div class="flex justify-between items-center border-b border-black/5 pb-1"><span>${i.station}: ${i.note}</span><button onclick="db.ref('v6/wash/${snap.key}').update({note:null})" class="text-red-500 ml-2">X</button></div>`; }
+                });
+                document.getElementById('notizMonitor').classList.toggle('hidden', !hasNote);
+                checkRundgang(count);
+            });
+
+            db.ref('v6/mull').on('value', s => {
                 const list = document.getElementById('mullList'); if(!list) return; list.innerHTML = '';
-                let r=0, p=0;
-                s.forEach(c => {
-                    const i = c.val(); if(i.type==='REST') r++; else p++;
-                    if(userConfig.mull) list.innerHTML += `<div class="p-5 card-dark border-l-8 ${i.type==='REST'?'border-orange-600':'border-blue-600'} font-black uppercase text-sm">${i.type} ${i.station}<br><button onclick="database.ref('mull_pozivi/${c.key}').remove()" class="text-[10px] underline opacity-40">OK</button></div>`;
-                });
-                handleMullAlarms(r, p); updateMullButtons();
+                s.forEach(snap => { if(user.mull) list.innerHTML += `<div class="p-3 card-dark border-l-4 ${snap.val().type==='REST'?'border-orange-500':'border-blue-500'} font-bold">${snap.val().type}<br>${snap.val().station} <button onclick="db.ref('v6/mull/${snap.key}').remove()" class="text-[8px] underline ml-2 opacity-30">ERLEDIGT</button></div>`; });
             });
 
-            const units = [{id:'m1', n:'M1', t:70},{id:'m2', n:'M2', t:70},{id:'m3', n:'M3', t:70},{id:'t1', n:'T1', t:90}];
-            units.forEach(u => {
-                database.ref('timers/'+u.id).on('value', s => {
-                    const d = s.val(), ui = document.getElementById('timerSection'); if(!ui) return;
-                    let el = document.getElementById(`ui-${u.id}`); if(!el) { el=document.createElement('div'); el.id=`ui-${u.id}`; ui.appendChild(el); }
-                    if(activeIntervals[u.id]) clearInterval(activeIntervals[u.id]);
-                    if(!d) el.innerHTML = `<div class="p-5 card-dark border-l-8 border-hellgruen flex justify-between items-center font-black uppercase text-sm mb-3">${u.n} FREI <button onclick="database.ref('timers/${u.id}').set({endTime:Date.now()+(u.t*60000)})" class="bg-hellgruen text-dunkel px-4 py-2">START</button></div>`;
-                    else {
-                        el.innerHTML = `<div class="p-5 card-dark border-l-8 border-white/20 text-center font-black text-lg italic mb-3"><div id="tmr-${u.id}">...</div></div>`;
-                        activeIntervals[u.id] = setInterval(() => {
-                            const diff = d.endTime - Date.now();
-                            if(diff<=0) document.getElementById('tmr-'+u.id).innerHTML=`<span class="text-red-500 blink">FERTIG</span> <button onclick="database.ref('timers/${u.id}').remove()" class="ml-3 underline text-xs">LEER</button>`;
-                            else { const m=Math.floor(diff/60000), sec=Math.floor((diff%60000)/1000); document.getElementById('tmr-'+u.id).innerText=`${u.n}: ${m}:${sec<10?'0':''}${sec}`; }
-                        }, 1000);
-                    }
-                });
+            const timers = document.getElementById('timerSection'); timers.innerHTML = '';
+            [{m:'m1',t:'t1'},{m:'m2',t:'t2'},{m:'m3',t:'t3'}].forEach(p => {
+                const d = document.createElement('div'); d.className="grid grid-cols-1 gap-2 p-2 border-b border-white/5"; d.innerHTML=`<div id="c-${p.m}"></div><div id="c-${p.t}"></div>`;
+                timers.appendChild(d); setupDevice(p.m, 'Maschine', 70, `c-${p.m}`); setupDevice(p.t, 'Trockner', 90, `c-${p.t}`);
+            });
+            updateLockButtons();
+        }
+
+        function setupDevice(id, lbl, mins, cId) {
+            db.ref('v6/timers/'+id).on('value', s => {
+                const d = s.val(); const cont = document.getElementById(cId);
+                if(!d) cont.innerHTML = `<button onclick="db.ref('v6/timers/${id}').set(Date.now()+${mins*60000})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5">${lbl} ${id.slice(1)} START</button>`;
+                else {
+                    if(activeTimers[id]) clearInterval(activeTimers[id]);
+                    activeTimers[id] = setInterval(() => {
+                        const r = d - Date.now();
+                        if(r<=0) { cont.innerHTML = `<button onclick="db.ref('v6/timers/${id}').remove()" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic">${lbl} ${id.slice(1)} LEEREN</button>`; clearInterval(activeTimers[id]); }
+                        else { const m=Math.floor(r/60000), sec=Math.floor((r%60000)/1000); cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec}</div>`; }
+                    }, 1000);
+                }
             });
         }
 
-        async function checkWashAlarm(c) {
-            if(!userConfig || !userConfig.wesche) return;
-            const t = (await database.ref('timers').once('value')).val() || {};
-            const container = document.getElementById('alarm-container');
-            if(c >= 3 && !t.m1 && !t.m2 && !t.m3 && !t.t1) {
-                if(!document.getElementById('wash-al')) container.innerHTML += `<div id="wash-al" class="p-6 bg-hellgruen text-dunkel font-black text-center animate-pulse uppercase shadow-2xl text-xl border-4 border-dunkel">🚀 RUNDGANG BEREIT! (3+ KÖRBE)</div>`;
-            } else { const el = document.getElementById('wash-al'); if(el) el.remove(); }
+        async function checkRundgang(count) {
+            if(!user.wesche) return;
+            const t = (await db.ref('v6/timers').once('value')).val() || {};
+            const al = document.getElementById('alarmArea');
+            const allFree = !t.m1 && !t.m2 && !t.m3 && !t.t1 && !t.t2 && !t.t3;
+            if(count >= 3 && allFree) {
+                al.innerHTML = `<button onclick="startRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20">🧺 Rundgang starten (Alles leeren)</button>`;
+            } else al.innerHTML = '';
         }
 
-        function handleMullAlarms(r, p) {
-            const container = document.getElementById('alarm-container');
-            const old = document.getElementById('mull-al'); if(old) old.remove();
-            let txt = ""; if(r>=2 && p>=2) txt="ALLE TONNEN VOLL!"; else if(r>=2) txt="RESTMÜLLTONNEN VOLL!"; else if(p>=2) txt="PAPIERTONNEN VOLL!";
-            if(txt) {
-                container.innerHTML += `<div id="mull-al" class="p-6 bg-orange-600 text-white font-black text-center animate-pulse uppercase shadow-2xl text-xl border-4 border-white">⚠️ ${txt}</div>`;
-                if(!blinkInterval) blinkInterval=setInterval(()=>{document.title=document.title===originalTitle?"!!! MÜLL !!!":originalTitle;},1000);
-            } else { clearInterval(blinkInterval); blinkInterval=null; document.title=originalTitle; }
+        function startRundgang() { db.ref('v6/wash').once('value', s => { s.forEach(sn => { if(sn.val().type==='KORB') sn.ref.remove(); }); }); }
+
+        function sendWash() { 
+            const last = localStorage.getItem('l_w'); if(last && Date.now()-last < 1800000) return;
+            db.ref('v6/wash/'+Date.now()).set({station:user.station, user:user.name, note:document.getElementById('userNotiz').value, type:'KORB'});
+            localStorage.setItem('l_w', Date.now()); document.getElementById('userNotiz').value=''; updateLockButtons();
         }
 
-        function logout() { localStorage.removeItem('refurb_session'); location.reload(); }
-        function adminDienstplan() { const pw=prompt("Admin PW?"); if(pw==="admin123") { const val=prompt("Format: NAME:WÄSCHE MÜLL BODEN"); if(val) { const map={}; val.split(',').forEach(p=>{ const [n,d]=p.split(':').map(x=>x.trim().toUpperCase()); if(n&&d) map[n]=d; }); database.ref('global/dienstplan/mapping').set(map); } } }
+        function sendMull(t) { 
+            const last = localStorage.getItem('l_m_'+t); if(last && Date.now()-last < 1800000) return;
+            db.ref('v6/mull/'+Date.now()).set({station:user.station, type:t});
+            localStorage.setItem('l_m_'+t, Date.now()); updateLockButtons();
+        }
+
+        function updateLockButtons() {
+            const now = Date.now();
+            const lW = localStorage.getItem('l_w');
+            const btnK = document.getElementById('btnKorb');
+            if(lW && now-lW < 1800000) { btnK.disabled = true; btnK.innerText = Math.ceil((1800000-(now-lW))/60000) + "M WARTEN"; } else { btnK.disabled = false; btnK.innerText = "KORB VOLL"; }
+            
+            ['REST', 'PAPIER'].forEach(t => { 
+                const lM = localStorage.getItem('l_m_'+t); 
+                const btn = document.getElementById('btn'+(t==='REST'?'Rest':'Papier')); 
+                if(lM && now-lM < 1800000) { btn.disabled = true; btn.innerText = "WARTEN"; } 
+                else { btn.disabled = false; btn.innerText = t; } 
+            });
+        }
+
+        function sendOnlyNote() { 
+            const n = document.getElementById('userNotiz').value.trim(); 
+            if(n) { db.ref('v6/wash/'+Date.now()).set({station:user.station, user:user.name, note:n, type:'INFO'}); document.getElementById('userNotiz').value=''; }
+        }
+
+        function adminMenu() {
+            const pw = prompt("PW?"); if(pw !== "admin123") return;
+            const mode = prompt("1: Mapping (NAME:DIENSTE) | 2: Nächste Woche (W:Name, M:Name, B:Name)");
+            if(mode === "1") {
+                const val = prompt("Format: MAX:WÄSCHE MÜLL, TOM:BODEN");
+                if(val) { const map={}; val.split(',').forEach(p=>{ const [n,d]=p.split(':').map(x=>x.trim().toUpperCase()); map[n]=d; }); db.ref('v6/mapping').set(map); }
+            } else if(mode === "2") {
+                const val = prompt("W:Name, M:Name, B:Name");
+                if(val) {
+                    const data = {}; val.split(',').forEach(p => { 
+                        const [key, name] = p.split(':').map(x=>x.trim());
+                        if(key.toUpperCase() === 'W') data.Wäsche = name;
+                        if(key.toUpperCase() === 'M') data.Müll = name;
+                        if(key.toUpperCase() === 'B') data.Boden = name;
+                    });
+                    db.ref('v6/nextWeek').set(data);
+                }
+            }
+        }
+        function logout() { if(user) db.ref('v6/presence/' + user.name).remove(); localStorage.removeItem('refurb_v6.8'); location.reload(); }
     </script>
 </body>
 </html>
