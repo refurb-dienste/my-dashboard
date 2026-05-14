@@ -107,10 +107,32 @@
                 if(now.getDate() !== loginDate.getDate() || now.getHours() >= 20) {
                     localStorage.removeItem('refurb_v6.8');
                 } else {
-                    user = u;
-                    startApp();
+                    claimStation(u.station, u.name, (ok, errMsg) => {
+                        if(!ok) { localStorage.removeItem('refurb_v6.8'); alert(errMsg); return; }
+                        user = u;
+                        startApp();
+                    });
                 }
             }
+        }
+
+        /** Eine WKS = max. eine Person (Name) gleichzeitig; bei Verbindungsabbruch wird die Belegung automatisch gelöscht. */
+        function claimStation(station, name, cb) {
+            const cRef = db.ref('v6/stationClaims/' + station);
+            cRef.transaction(cur => {
+                if(cur === null || cur.name === name) return { name: name, time: Date.now() };
+                return;
+            }, (err, committed, snap) => {
+                if(err) { cb(false, 'WKS-Check: ' + err.message); return; }
+                if(!committed) {
+                    const holder = (snap && snap.val() && snap.val().name) ? snap.val().name : '?';
+                    cb(false, 'Diese WKS ist schon von ' + holder + ' angemeldet. Bitte andere Station wählen oder warten.');
+                    return;
+                }
+                cRef.onDisconnect().remove();
+                db.ref('v6/presence/' + name).onDisconnect().remove();
+                cb(true);
+            });
         }
 
         function checkLock() {
@@ -146,10 +168,14 @@
         function doLogin() {
             const name = document.getElementById('userName').value.trim().toUpperCase();
             if(!name) return;
-            user = { name: name, station: document.getElementById('userStation').value, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked, loginTime: Date.now() };
-            localStorage.setItem('refurb_v6.8', JSON.stringify(user));
-            updatePresence();
-            startApp();
+            const station = document.getElementById('userStation').value;
+            claimStation(station, name, (ok, errMsg) => {
+                if(!ok) { alert(errMsg); return; }
+                user = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked, loginTime: Date.now() };
+                localStorage.setItem('refurb_v6.8', JSON.stringify(user));
+                updatePresence();
+                startApp();
+            });
         }
 
         function updatePresence() {
@@ -288,10 +314,15 @@
             }
         }
 
+        const WASH_COOLDOWN_MS = 30 * 60 * 1000;
+
+        function washLockKey() { return 'l_w_' + user.station; }
+
         function sendWash() { 
-            const last = localStorage.getItem('l_w'); if(last && Date.now()-last < 1800000) return;
+            const k = washLockKey();
+            const last = localStorage.getItem(k); if(last && Date.now() - Number(last) < WASH_COOLDOWN_MS) return;
             db.ref('v6/wash/'+Date.now()).set({station:user.station, user:user.name, note:document.getElementById('userNotiz').value, type:'KORB'});
-            localStorage.setItem('l_w', Date.now()); document.getElementById('userNotiz').value=''; updateLockButtons();
+            localStorage.setItem(k, String(Date.now())); document.getElementById('userNotiz').value=''; updateLockButtons();
         }
 
         function sendMull(t) { 
@@ -303,9 +334,9 @@
 
         function updateLockButtons() {
             const now = Date.now();
-            const lW = localStorage.getItem('l_w');
+            const lW = localStorage.getItem(washLockKey());
             const btnK = document.getElementById('btnKorb');
-            if(lW && now-lW < 1800000) { btnK.disabled = true; btnK.innerText = Math.ceil((1800000-(now-lW))/60000) + "M WARTEN"; } else { btnK.disabled = false; btnK.innerText = "KORB VOLL"; }
+            if(lW && now - Number(lW) < WASH_COOLDOWN_MS) { btnK.disabled = true; btnK.innerText = Math.ceil((WASH_COOLDOWN_MS - (now - Number(lW))) / 60000) + "M WARTEN"; } else { btnK.disabled = false; btnK.innerText = "KORB VOLL"; }
             
             const group = mullGroups[user.station] || 'other';
             ['REST', 'PAPIER'].forEach(t => { 
@@ -341,7 +372,14 @@
                 }
             }
         }
-        function logout() { if(user) db.ref('v6/presence/' + user.name).remove(); localStorage.removeItem('refurb_v6.8'); location.reload(); }
+        function logout() {
+            if(user) {
+                db.ref('v6/presence/' + user.name).remove();
+                db.ref('v6/stationClaims/' + user.station).remove();
+            }
+            localStorage.removeItem('refurb_v6.8');
+            location.reload();
+        }
     </script>
 </body>
 </html>
