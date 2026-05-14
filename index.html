@@ -64,6 +64,7 @@
         </header>
 
         <div id="alarmArea" class="max-w-7xl mx-auto p-4 w-full"></div>
+        <div id="mullAlarmArea" class="max-w-7xl mx-auto p-4 w-full"></div>
 
         <main class="flex-grow max-w-7xl mx-auto p-4 md:p-8 w-full space-y-6">
             <div id="weschePanel" class="hidden space-y-6">
@@ -92,12 +93,24 @@
         const firebaseConfig = { apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ", databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", projectId: "dienste-fluxs" };
         firebase.initializeApp(firebaseConfig); const db = firebase.database();
         let user = null; let activeTimers = {};
+        const mullGroups = { '050': 'g1', '051': 'g1', '052': 'g1', '053': 'g2', '054': 'g2', '055': 'g2', '056': 'g3', '057': 'g3', '058': 'g3', '059': 'g3' };
+        const employees = ['Sabine', 'Daniela', 'Simone', 'Mira', 'Ramona', 'Minela', 'Mirsada', 'Patrick', 'Chiara', 'Victoria', 'Larissa', 'Agnieszka', 'Aushilfe 1', 'Aushilfe 2'];
 
         window.onload = () => {
             const sel = document.getElementById('userStation');
             for(let i=50; i<=59; i++) sel.innerHTML += `<option value="WKS0${i}">WKS0${i}</option>`;
             const saved = localStorage.getItem('refurb_v6.8');
-            if(saved) { user = JSON.parse(saved); startApp(); }
+            if(saved) {
+                const u = JSON.parse(saved);
+                const loginDate = new Date(u.loginTime);
+                const now = new Date();
+                if(now.getDate() !== loginDate.getDate() || now.getHours() >= 20) {
+                    localStorage.removeItem('refurb_v6.8');
+                } else {
+                    user = u;
+                    startApp();
+                }
+            }
         }
 
         function checkLock() {
@@ -105,17 +118,35 @@
             db.ref('v6/mapping').once('value', s => {
                 const map = s.val() || {};
                 const w = document.getElementById('checkWesche'), m = document.getElementById('checkMull'), b = document.getElementById('checkBoden');
+                let isLocked = false;
                 if(map[n]) {
                     w.checked = map[n].includes("WÄSCHE"); m.checked = map[n].includes("MÜLL"); b.checked = map[n].includes("BODEN");
-                    w.disabled = m.disabled = b.disabled = true; document.getElementById('lockMsg').classList.remove('hidden');
-                } else { w.disabled = m.disabled = b.disabled = false; document.getElementById('lockMsg').classList.add('hidden'); }
+                    w.disabled = m.disabled = b.disabled = true; isLocked = true;
+                } else {
+                    // Check nextWeek
+                    db.ref('v6/nextWeek').once('value', nw => {
+                        const next = nw.val() || {};
+                        const assigned = [];
+                        if(next.Wäsche && next.Wäsche.toUpperCase() === n) assigned.push("WÄSCHE");
+                        if(next.Müll && next.Müll.toUpperCase() === n) assigned.push("MÜLL");
+                        if(next.Boden && next.Boden.toUpperCase() === n) assigned.push("BODEN");
+                        if(assigned.length > 0) {
+                            w.checked = assigned.includes("WÄSCHE"); m.checked = assigned.includes("MÜLL"); b.checked = assigned.includes("BODEN");
+                            w.disabled = m.disabled = b.disabled = true; isLocked = true;
+                        } else {
+                            w.disabled = m.disabled = b.disabled = false;
+                        }
+                        document.getElementById('lockMsg').classList.toggle('hidden', !isLocked);
+                    });
+                }
+                if(!isLocked) document.getElementById('lockMsg').classList.add('hidden');
             });
         }
 
         function doLogin() {
             const name = document.getElementById('userName').value.trim().toUpperCase();
             if(!name) return;
-            user = { name: name, station: document.getElementById('userStation').value, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked };
+            user = { name: name, station: document.getElementById('userStation').value, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked, loginTime: Date.now() };
             localStorage.setItem('refurb_v6.8', JSON.stringify(user));
             updatePresence();
             startApp();
@@ -152,7 +183,11 @@
                 const d = s.val(); const f = document.getElementById('nextWeekDisplay');
                 if(!d) { f.classList.add('hidden'); return; }
                 const now = new Date(); if(now.getDay() === 1 && now.getHours() >= 6) { db.ref('v6/nextWeek').remove(); return; }
-                f.classList.remove('hidden'); f.innerText = `Nächste Woche: 🧺 ${d.Wäsche || '-'} | 🗑️ ${d.Müll || '-'} | 🧹 ${d.Boden || '-'}`;
+                f.classList.remove('hidden'); 
+                const isThisWeek = now.getDay() !== 5; // Nicht Freitag
+                const title = isThisWeek ? 'dienste diese woche' : 'Nächste Woche';
+                const text = `📢 ${title}: ${d.Wäsche || '-'} - 🧺, ${d.Müll || '-'} - 🗑️, ${d.Boden || '-'} - 🧹`;
+                f.innerText = text;
             });
 
             db.ref('v6/wash').on('value', s => {
@@ -169,7 +204,14 @@
 
             db.ref('v6/mull').on('value', s => {
                 const list = document.getElementById('mullList'); if(!list) return; list.innerHTML = '';
-                s.forEach(snap => { if(user.mull) list.innerHTML += `<div class="p-3 card-dark border-l-4 ${snap.val().type==='REST'?'border-orange-500':'border-blue-500'} font-bold">${snap.val().type}<br>${snap.val().station} <button onclick="db.ref('v6/mull/${snap.key}').remove()" class="text-[8px] underline ml-2 opacity-30">ERLEDIGT</button></div>`; });
+                let countRest = 0, countPapier = 0;
+                s.forEach(snap => { 
+                    const type = snap.val().type;
+                    if(type === 'REST') countRest++;
+                    else if(type === 'PAPIER') countPapier++;
+                    if(user.mull) list.innerHTML += `<div class="p-3 card-dark border-l-4 ${type==='REST'?'border-orange-500':'border-blue-500'} font-bold">${type}<br>${snap.val().station} <button onclick="db.ref('v6/mull/${snap.key}').remove()" class="text-[8px] underline ml-2 opacity-30">ERLEDIGT</button></div>`; 
+                });
+                checkMullAlert(countRest, countPapier);
             });
 
             const timers = document.getElementById('timerSection'); timers.innerHTML = '';
@@ -189,7 +231,7 @@
                     activeTimers[id] = setInterval(() => {
                         const r = d - Date.now();
                         if(r<=0) { cont.innerHTML = `<button onclick="db.ref('v6/timers/${id}').remove()" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic">${lbl} ${id.slice(1)} LEEREN</button>`; clearInterval(activeTimers[id]); }
-                        else { const m=Math.floor(r/60000), sec=Math.floor((r%60000)/1000); cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec}</div>`; }
+                        else { const m=Math.floor(r/60000), sec=Math.floor((r%60000)/1000); cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="db.ref('v6/timers/${id}').remove()" class="ml-2 text-red-500">STOP</button></div>`; }
                     }, 1000);
                 }
             });
@@ -207,6 +249,29 @@
 
         function startRundgang() { db.ref('v6/wash').once('value', s => { s.forEach(sn => { if(sn.val().type==='KORB') sn.ref.remove(); }); }); }
 
+        let titleInterval = null;
+
+        function checkMullAlert(countRest, countPapier) {
+            const al = document.getElementById('mullAlarmArea');
+            if(countRest >= 2 || countPapier >= 2 || (countRest + countPapier) >= 4) {
+                if(user.mull) {
+                    al.innerHTML = '<div class="p-4 bg-red-600 text-white font-bold uppercase blink">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>';
+                }
+                if(!titleInterval) {
+                    titleInterval = setInterval(() => {
+                        document.title = document.title === "Müll entleeren" ? "WOCHENDIENST_MASTER v6.8" : "Müll entleeren";
+                    }, 1000);
+                }
+            } else {
+                al.innerHTML = '';
+                if(titleInterval) {
+                    clearInterval(titleInterval);
+                    titleInterval = null;
+                    document.title = "WOCHENDIENST_MASTER v6.8";
+                }
+            }
+        }
+
         function sendWash() { 
             const last = localStorage.getItem('l_w'); if(last && Date.now()-last < 1800000) return;
             db.ref('v6/wash/'+Date.now()).set({station:user.station, user:user.name, note:document.getElementById('userNotiz').value, type:'KORB'});
@@ -214,9 +279,10 @@
         }
 
         function sendMull(t) { 
-            const last = localStorage.getItem('l_m_'+t); if(last && Date.now()-last < 1800000) return;
+            const group = mullGroups[user.station] || 'other';
+            const last = localStorage.getItem('l_m_'+group+'_'+t); if(last && Date.now()-last < 1800000) return;
             db.ref('v6/mull/'+Date.now()).set({station:user.station, type:t});
-            localStorage.setItem('l_m_'+t, Date.now()); updateLockButtons();
+            localStorage.setItem('l_m_'+group+'_'+t, Date.now()); updateLockButtons();
         }
 
         function updateLockButtons() {
@@ -225,8 +291,9 @@
             const btnK = document.getElementById('btnKorb');
             if(lW && now-lW < 1800000) { btnK.disabled = true; btnK.innerText = Math.ceil((1800000-(now-lW))/60000) + "M WARTEN"; } else { btnK.disabled = false; btnK.innerText = "KORB VOLL"; }
             
+            const group = mullGroups[user.station] || 'other';
             ['REST', 'PAPIER'].forEach(t => { 
-                const lM = localStorage.getItem('l_m_'+t); 
+                const lM = localStorage.getItem('l_m_'+group+'_'+t); 
                 const btn = document.getElementById('btn'+(t==='REST'?'Rest':'Papier')); 
                 if(lM && now-lM < 1800000) { btn.disabled = true; btn.innerText = "WARTEN"; } 
                 else { btn.disabled = false; btn.innerText = t; } 
@@ -245,7 +312,8 @@
                 const val = prompt("Format: MAX:WÄSCHE MÜLL, TOM:BODEN");
                 if(val) { const map={}; val.split(',').forEach(p=>{ const [n,d]=p.split(':').map(x=>x.trim().toUpperCase()); map[n]=d; }); db.ref('v6/mapping').set(map); }
             } else if(mode === "2") {
-                const val = prompt("W:Name, M:Name, B:Name");
+                const empList = employees.join(', ');
+                const val = prompt(`Nächste Woche (W:Name, M:Name, B:Name)\nVerfügbare Namen: ${empList}`);
                 if(val) {
                     const data = {}; val.split(',').forEach(p => { 
                         const [key, name] = p.split(':').map(x=>x.trim());
