@@ -26,10 +26,16 @@
         <div class="w-full max-w-md p-10 border-2 border-hellgruen/20 bg-[#1a2f23] shadow-2xl">
             <h1 class="text-3xl font-black text-center text-hellgruen uppercase mb-8 italic">Wochendienst</h1>
             <div class="space-y-4">
-                <select id="userName" autocomplete="off" spellcheck="false" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none uppercase font-bold" onchange="checkLock()">
-                    <option value="" disabled selected>NAME WÄHLEN</option>
-                </select>
-
+                <div class="grid gap-3 sm:grid-cols-[1fr_10rem] items-start">
+                    <div>
+                        <input type="text" id="userName" list="mitarbeiterNamen" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen für Vorschläge)" class="w-full p-3 bg-black/40 border border-white/10 text-white outline-none uppercase font-bold text-sm" oninput="checkLock(); updateNameSuggestions(this.value)">
+                        <datalist id="mitarbeiterNamen"></datalist>
+                    </div>
+                    <div>
+                        <p class="text-[9px] uppercase opacity-50 mb-2">Vorschläge</p>
+                        <div id="nameSuggestions" class="grid grid-cols-2 gap-1 max-h-40 overflow-y-auto rounded border border-white/10 bg-black/20 p-1 text-[10px]"></div>
+                    </div>
+                </div>
                 <p id="lockMsg" class="text-[10px] text-yellow-400 font-bold uppercase hidden">⚠️ Dienst fest eingeteilt</p>
                 <select id="userStation" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none font-bold"></select>
                 <div class="grid grid-cols-1 gap-2 py-4 border-y border-white/10 text-sm">
@@ -276,18 +282,65 @@
             });
         }
 
+        function updateNameSuggestions(filter) {
+            const list = document.getElementById('nameSuggestions');
+            if(!list) return;
+            const text = String(filter || '').trim().toLowerCase();
+            const matches = STAFF_MEMBERS.filter(s => {
+                const label = s.label.toLowerCase();
+                const key = s.key.toLowerCase();
+                return !text || label.includes(text) || key.includes(text);
+            }).slice(0, 12);
+            if(matches.length === 0) {
+                list.innerHTML = '<div class="opacity-50 uppercase col-span-2">Keine Vorschläge</div>';
+                return;
+            }
+            list.innerHTML = matches.map(s =>
+                `<button type="button" onclick="selectSuggestedName('${s.label.replace(/'/g, "\\'") }')" class="w-full text-left px-2 py-1 rounded uppercase hover:bg-hellgruen/20 transition text-[10px]">${escapeHtml(s.label)}</button>`
+            ).join('');
+        }
+
+        function selectSuggestedName(name) {
+            const input = document.getElementById('userName');
+            if(!input) return;
+            input.value = name;
+            checkLock();
+            updateNameSuggestions(name);
+            input.focus();
+        }
+
         function fillNameDatalist() {
-            const sel = document.getElementById('userName');
-            if(!sel) return;
-            STAFF_MEMBERS.forEach(s => {
-                const opt = document.createElement('option');
-                opt.value = s.key;
-                opt.textContent = s.label;
-                sel.appendChild(opt);
-            });
+            const dl = document.getElementById('mitarbeiterNamen');
+            if(!dl) return;
+            dl.innerHTML = STAFF_MEMBERS.map(s => `<option value="${s.key}">${s.label}</option>`).join('');
+            updateNameSuggestions('');
+        }
+
+        function isAfterSessionEnd(date) {
+            const now = date ? new Date(date) : new Date();
+            return now.getHours() >= 20;
+        }
+
+        function expireSessionIfNeeded() {
+            if(!isAfterSessionEnd()) return false;
+            if(user) {
+                logout();
+                return true;
+            }
+            if(localStorage.getItem('refurb_v6.8')) {
+                localStorage.removeItem('refurb_v6.8');
+            }
+            return true;
+        }
+
+        function scheduleSessionExpiryCheck() {
+            setInterval(() => {
+                if(user && isAfterSessionEnd()) logout();
+            }, 60000);
         }
 
         window.onload = () => {
+            expireSessionIfNeeded();
             fillNameDatalist();
             migrateLegacyMappingToDutyState();
             tryApplyPendingDuties();
@@ -300,13 +353,14 @@
                 const u = JSON.parse(saved);
                 const loginDate = new Date(u.loginTime);
                 const now = new Date();
-                if(now.getDate() !== loginDate.getDate() || now.getHours() >= 20) {
+                if(now.getDate() !== loginDate.getDate() || isAfterSessionEnd(now)) {
                     localStorage.removeItem('refurb_v6.8');
                 } else {
                     claimStation(u.station, u.name, (ok, errMsg) => {
                         if(!ok) { localStorage.removeItem('refurb_v6.8'); alert(errMsg); return; }
                         user = u;
                         startApp();
+                        scheduleSessionExpiryCheck();
                     });
                 }
             }
@@ -350,9 +404,8 @@
 
         function doLogin() {
             const name = document.getElementById('userName').value.trim().toUpperCase();
-            if(!name) { alert('Bitte Namen eingeben'); return; }
+            if(!name) return;
             const station = document.getElementById('userStation').value;
-            if(!station) { alert('Bitte Station wählen'); return; }
             claimStation(station, name, (ok, errMsg) => {
                 if(!ok) { alert(errMsg); return; }
                 user = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked, loginTime: Date.now() };
@@ -369,6 +422,7 @@
         }
 
         function startApp() {
+            if(!user) return;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('displayUser').innerText = user.name;
@@ -384,6 +438,7 @@
                 if(window._bodenTick) clearInterval(window._bodenTick);
                 window._bodenTick = setInterval(tickBodenReminder, 30000);
             }
+            scheduleSessionExpiryCheck();
         }
 
         function sync() {
