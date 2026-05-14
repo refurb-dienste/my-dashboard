@@ -26,7 +26,8 @@
         <div class="w-full max-w-md p-10 border-2 border-hellgruen/20 bg-[#1a2f23] shadow-2xl">
             <h1 class="text-3xl font-black text-center text-hellgruen uppercase mb-8 italic">Wochendienst</h1>
             <div class="space-y-4">
-                <input type="text" id="userName" placeholder="VORNAME" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none uppercase font-bold" oninput="checkLock()">
+                <input type="text" id="userName" list="mitarbeiterNamen" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen für Vorschläge)" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none uppercase font-bold" oninput="checkLock()">
+                <datalist id="mitarbeiterNamen"></datalist>
                 <p id="lockMsg" class="text-[10px] text-yellow-400 font-bold uppercase hidden">⚠️ Dienst fest eingeteilt</p>
                 <select id="userStation" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none font-bold"></select>
                 <div class="grid grid-cols-1 gap-2 py-4 border-y border-white/10 text-sm">
@@ -87,6 +88,14 @@
         </main>
 
         <footer id="nextWeekDisplay" class="hidden bg-black/60 p-2 text-center text-[9px] uppercase tracking-widest border-t border-white/5 opacity-50"></footer>
+
+        <div id="bodenReminderOverlay" class="hidden fixed inset-0 z-[700] flex items-center justify-center bg-[#0a0f0c]/95 backdrop-blur-sm p-6">
+            <div class="w-full max-w-lg border-2 border-blue-500 bg-[#1a2f23] p-10 shadow-2xl text-center space-y-8">
+                <p class="text-2xl md:text-3xl font-black uppercase text-blue-300 leading-tight">🧹 Zeit, den Boden zu kehren</p>
+                <p class="text-xs uppercase opacity-50 tracking-widest">Bodendienst · täglich ab 14:00</p>
+                <button type="button" onclick="dismissBodenReminder()" class="w-full btn-minimal p-5 text-base tracking-widest hover:bg-blue-500 hover:text-white transition">Erledigt ✓</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -94,9 +103,25 @@
         firebase.initializeApp(firebaseConfig); const db = firebase.database();
         let user = null; let activeTimers = {};
         const mullGroups = { '050': 'g1', '051': 'g1', '052': 'g1', '053': 'g2', '054': 'g2', '055': 'g2', '056': 'g3', '057': 'g3', '058': 'g3', '059': 'g3' };
-        const employees = ['Sabine', 'Daniela', 'Simone', 'Mira', 'Ramona', 'Minela', 'Mirsada', 'Patrick', 'Chiara', 'Victoria', 'Larissa', 'Agnieszka', 'Aushilfe 1', 'Aushilfe 2'];
+        const APP_TITLE = 'WOCHENDIENST_MASTER v6.8';
+        /** Anzeige + interner Name (Großbuchstaben) für Firebase / Mapping */
+        const STAFF_MEMBERS = [
+            { key: 'MINELA', label: 'Minela' }, { key: 'RAMONA', label: 'Ramona' }, { key: 'DANIELA', label: 'Daniela' },
+            { key: 'SIMONE', label: 'Simone' }, { key: 'LARISSA', label: 'Larissa' }, { key: 'SABINE', label: 'Sabine' },
+            { key: 'PATRICK', label: 'Patrick' }, { key: 'VICTORIA', label: 'Victoria' }, { key: 'CHIARA', label: 'Chiara' },
+            { key: 'MIRA', label: 'Mira' }, { key: 'AGNIESZKA', label: 'Agnieszka' }, { key: 'MIRSADA', label: 'Mirsada' },
+            { key: 'AUSHILFE1', label: 'Aushilfe 1' }, { key: 'AUSHILFE2', label: 'Aushilfe 2' }
+        ];
+        const employees = STAFF_MEMBERS.map(s => s.label);
+
+        function fillNameDatalist() {
+            const dl = document.getElementById('mitarbeiterNamen');
+            if(!dl) return;
+            dl.innerHTML = STAFF_MEMBERS.map(s => `<option value="${s.key}">${s.label}</option>`).join('');
+        }
 
         window.onload = () => {
+            fillNameDatalist();
             const sel = document.getElementById('userStation');
             for(let i=50; i<=59; i++) sel.innerHTML += `<option value="WKS0${i}">WKS0${i}</option>`;
             const saved = localStorage.getItem('refurb_v6.8');
@@ -184,6 +209,8 @@
             db.ref('v6/presence/' + user.name).set({ station: user.station, services: d, time: Date.now() });
         }
 
+        function hasAnyDuty() { return user && (user.wesche || user.mull || user.boden); }
+
         function startApp() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
@@ -193,6 +220,11 @@
             if(user.mull) document.getElementById('mullPanel').classList.remove('hidden');
             updatePresence();
             sync();
+            tickBodenReminder();
+            if(user.boden) {
+                if(window._bodenTick) clearInterval(window._bodenTick);
+                window._bodenTick = setInterval(tickBodenReminder, 30000);
+            }
         }
 
         function sync() {
@@ -202,7 +234,8 @@
                     const p = snap.val();
                     list.innerHTML += `<div class="bg-white/5 px-2 py-1 rounded text-[9px] font-bold border border-white/10 whitespace-nowrap">${snap.key} @ ${p.station} ${p.services || ''}</div>`;
                 });
-                list.classList.toggle('hidden', s.numChildren() === 0);
+                const showOnline = hasAnyDuty() && s.numChildren() > 0;
+                list.classList.toggle('hidden', !showOnline);
             });
 
             db.ref('v6/nextWeek').on('value', s => {
@@ -218,33 +251,48 @@
 
             db.ref('v6/wash').on('value', s => {
                 const list = document.getElementById('wescheList'); const nList = document.getElementById('notizList');
+                if(!user.wesche) {
+                    if(list) list.innerHTML = '';
+                    if(nList) nList.innerHTML = '';
+                    document.getElementById('notizMonitor').classList.add('hidden');
+                    checkRundgang(0);
+                    return;
+                }
                 list.innerHTML = ''; nList.innerHTML = ''; let count = 0; let hasNote = false;
                 s.forEach(snap => {
                     const i = snap.val();
-                    if(i.type === 'KORB') { count++; if(user.wesche) list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase">${i.station}<br><span class="opacity-30 text-[8px]">${i.user}</span><button onclick="db.ref('v6/wash/${snap.key}').remove()" class="absolute right-2 top-2 font-black text-hellgruen">✓</button></div>`; }
-                    if(i.note && user.wesche) { hasNote = true; nList.innerHTML += `<div class="flex justify-between items-center border-b border-black/5 pb-1"><span>${i.station}: ${i.note}</span><button onclick="db.ref('v6/wash/${snap.key}').update({note:null})" class="text-red-500 ml-2">X</button></div>`; }
+                    if(i.type === 'KORB') { count++; list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase">${i.station}<br><span class="opacity-30 text-[8px]">${i.user}</span><button onclick="db.ref('v6/wash/${snap.key}').remove()" class="absolute right-2 top-2 font-black text-hellgruen">✓</button></div>`; }
+                    if(i.note) { hasNote = true; nList.innerHTML += `<div class="flex justify-between items-center border-b border-black/5 pb-1"><span>${i.station}: ${i.note}</span><button onclick="db.ref('v6/wash/${snap.key}').update({note:null})" class="text-red-500 ml-2">X</button></div>`; }
                 });
                 document.getElementById('notizMonitor').classList.toggle('hidden', !hasNote);
                 checkRundgang(count);
             });
 
             db.ref('v6/mull').on('value', s => {
-                const list = document.getElementById('mullList'); if(!list) return; list.innerHTML = '';
+                const list = document.getElementById('mullList'); if(!list) return;
+                if(!user.mull) {
+                    list.innerHTML = '';
+                    checkMullAlert(0, 0);
+                    return;
+                }
+                list.innerHTML = '';
                 let countRest = 0, countPapier = 0;
                 s.forEach(snap => { 
                     const type = snap.val().type;
                     if(type === 'REST') countRest++;
                     else if(type === 'PAPIER') countPapier++;
-                    if(user.mull) list.innerHTML += `<div class="p-3 card-dark border-l-4 ${type==='REST'?'border-orange-500':'border-blue-500'} font-bold">${type}<br>${snap.val().station} <button onclick="db.ref('v6/mull/${snap.key}').remove()" class="text-[8px] underline ml-2 opacity-30">ERLEDIGT</button></div>`; 
+                    list.innerHTML += `<div class="p-3 card-dark border-l-4 ${type==='REST'?'border-orange-500':'border-blue-500'} font-bold">${type}<br>${snap.val().station} <button onclick="db.ref('v6/mull/${snap.key}').remove()" class="text-[8px] underline ml-2 opacity-30">ERLEDIGT</button></div>`; 
                 });
                 checkMullAlert(countRest, countPapier);
             });
 
             const timers = document.getElementById('timerSection'); timers.innerHTML = '';
-            [{m:'m1',t:'t1'},{m:'m2',t:'t2'},{m:'m3',t:'t3'}].forEach(p => {
-                const d = document.createElement('div'); d.className="grid grid-cols-1 gap-2 p-2 border-b border-white/5"; d.innerHTML=`<div id="c-${p.m}"></div><div id="c-${p.t}"></div>`;
-                timers.appendChild(d); setupDevice(p.m, 'Maschine', 70, `c-${p.m}`); setupDevice(p.t, 'Trockner', 90, `c-${p.t}`);
-            });
+            if(user.wesche) {
+                [{m:'m1',t:'t1'},{m:'m2',t:'t2'},{m:'m3',t:'t3'}].forEach(p => {
+                    const d = document.createElement('div'); d.className="grid grid-cols-1 gap-2 p-2 border-b border-white/5"; d.innerHTML=`<div id="c-${p.m}"></div><div id="c-${p.t}"></div>`;
+                    timers.appendChild(d); setupDevice(p.m, 'Maschine', 70, `c-${p.m}`); setupDevice(p.t, 'Trockner', 90, `c-${p.t}`);
+                });
+            }
             updateLockButtons();
         }
 
@@ -277,40 +325,152 @@
             db.ref('v6/timers/'+id).remove();
         }
 
+        let titleInterval = null;
+        let rundgangTitleShouldBlink = false;
+        let rundgangTitleInterval = null;
+        let bodenTitleInterval = null;
+        const RUNDGANG_TITLE_ALT = '🧺 Rundgang starten';
+        const BODEN_TITLE_ALT = '🧹 Boden kehren';
+
+        function restoreDefaultTitleIfIdle() {
+            if(!titleInterval && !rundgangTitleInterval && !bodenTitleInterval) document.title = APP_TITLE;
+        }
+
+        function stopBodenTitleBlink() {
+            if(bodenTitleInterval) {
+                clearInterval(bodenTitleInterval);
+                bodenTitleInterval = null;
+            }
+            restoreDefaultTitleIfIdle();
+        }
+
+        function maybeStartBodenTitleBlink() {
+            if(!user || !user.boden) return;
+            const ov = document.getElementById('bodenReminderOverlay');
+            if(!ov || ov.classList.contains('hidden')) return;
+            if(titleInterval || rundgangTitleInterval) return;
+            if(bodenTitleInterval) return;
+            bodenTitleInterval = setInterval(() => {
+                document.title = document.title === BODEN_TITLE_ALT ? APP_TITLE : BODEN_TITLE_ALT;
+            }, 1000);
+        }
+
+        function bodenDoneStorageKey() {
+            const d = new Date();
+            return 'bodenErledigt_' + d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        function isBodenKehrenDoneToday() {
+            return !!localStorage.getItem(bodenDoneStorageKey());
+        }
+
+        function tickBodenReminder() {
+            if(!user || !user.boden) {
+                hideBodenReminderOverlay();
+                return;
+            }
+            const h = new Date().getHours();
+            if(h < 14 || isBodenKehrenDoneToday()) {
+                hideBodenReminderOverlay();
+                return;
+            }
+            showBodenReminderOverlay();
+        }
+
+        function showBodenReminderOverlay() {
+            const el = document.getElementById('bodenReminderOverlay');
+            if(!el) return;
+            el.classList.remove('hidden');
+            stopBodenTitleBlink();
+            maybeStartBodenTitleBlink();
+        }
+
+        function hideBodenReminderOverlay() {
+            const el = document.getElementById('bodenReminderOverlay');
+            if(el) el.classList.add('hidden');
+            stopBodenTitleBlink();
+        }
+
+        function dismissBodenReminder() {
+            localStorage.setItem(bodenDoneStorageKey(), '1');
+            hideBodenReminderOverlay();
+            restoreDefaultTitleIfIdle();
+        }
+
+        function stopRundgangTitleBlink() {
+            rundgangTitleShouldBlink = false;
+            if(rundgangTitleInterval) {
+                clearInterval(rundgangTitleInterval);
+                rundgangTitleInterval = null;
+            }
+            restoreDefaultTitleIfIdle();
+            maybeStartBodenTitleBlink();
+        }
+
+        function maybeStartRundgangTitleBlink() {
+            if(!user || !user.wesche || !rundgangTitleShouldBlink) return;
+            if(titleInterval) return;
+            if(rundgangTitleInterval) return;
+            stopBodenTitleBlink();
+            rundgangTitleInterval = setInterval(() => {
+                document.title = document.title === RUNDGANG_TITLE_ALT ? APP_TITLE : RUNDGANG_TITLE_ALT;
+            }, 1000);
+        }
+
         async function checkRundgang(count) {
-            if(!user.wesche) return;
-            const t = (await db.ref('v6/timers').once('value')).val() || {};
             const al = document.getElementById('alarmArea');
+            if(!user || !user.wesche) {
+                if(al) al.innerHTML = '';
+                stopRundgangTitleBlink();
+                return;
+            }
+            const t = (await db.ref('v6/timers').once('value')).val() || {};
             const allFree = !t.m1 && !t.m2 && !t.m3 && !t.t1 && !t.t2 && !t.t3;
             if(count >= 3 && allFree) {
+                stopBodenTitleBlink();
                 al.innerHTML = `<button onclick="startRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20">🧺 Rundgang starten (Alles leeren)</button>`;
-            } else al.innerHTML = '';
+                rundgangTitleShouldBlink = true;
+                maybeStartRundgangTitleBlink();
+            } else {
+                al.innerHTML = '';
+                stopRundgangTitleBlink();
+            }
         }
 
         function startRundgang() { db.ref('v6/wash').once('value', s => { s.forEach(sn => { if(sn.val().type==='KORB') sn.ref.remove(); }); }); }
 
-        let titleInterval = null;
-
         function checkMullAlert(countRest, countPapier) {
             const al = document.getElementById('mullAlarmArea');
-            if(countRest >= 2 || countPapier >= 2 || (countRest + countPapier) >= 4) {
-                if(user.mull) {
-                    al.innerHTML = '<div class="p-4 bg-red-600 text-white font-bold uppercase blink">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>';
-                    if(!titleInterval) {
-                        titleInterval = setInterval(() => {
-                            document.title = document.title === "Müll entleeren" ? "WOCHENDIENST_MASTER v6.8" : "Müll entleeren";
-                        }, 1000);
-                    }
-                } else {
-                    al.innerHTML = '';
+            if(!user || !user.mull) {
+                if(al) al.innerHTML = '';
+                if(titleInterval) {
+                    clearInterval(titleInterval);
+                    titleInterval = null;
+                }
+                restoreDefaultTitleIfIdle();
+                maybeStartRundgangTitleBlink();
+                maybeStartBodenTitleBlink();
+                return;
+            }
+            const mullCritical = countRest >= 2 || countPapier >= 2 || (countRest + countPapier) >= 4;
+            if(mullCritical) {
+                stopBodenTitleBlink();
+                al.innerHTML = '<div class="p-4 bg-red-600 text-white font-bold uppercase blink">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>';
+                if(!titleInterval) {
+                    stopRundgangTitleBlink();
+                    titleInterval = setInterval(() => {
+                        document.title = document.title === 'Müll entleeren' ? APP_TITLE : 'Müll entleeren';
+                    }, 1000);
                 }
             } else {
                 al.innerHTML = '';
             }
-            if(titleInterval && (!user.mull || !(countRest >= 2 || countPapier >= 2 || (countRest + countPapier) >= 4))) {
+            if(titleInterval && !mullCritical) {
                 clearInterval(titleInterval);
                 titleInterval = null;
-                document.title = "WOCHENDIENST_MASTER v6.8";
+                restoreDefaultTitleIfIdle();
+                maybeStartRundgangTitleBlink();
+                maybeStartBodenTitleBlink();
             }
         }
 
@@ -319,6 +479,7 @@
         function washLockKey() { return 'l_w_' + user.station; }
 
         function sendWash() { 
+            if(!user) return;
             const k = washLockKey();
             const last = localStorage.getItem(k); if(last && Date.now() - Number(last) < WASH_COOLDOWN_MS) return;
             db.ref('v6/wash/'+Date.now()).set({station:user.station, user:user.name, note:document.getElementById('userNotiz').value, type:'KORB'});
@@ -326,6 +487,7 @@
         }
 
         function sendMull(t) { 
+            if(!user) return;
             const group = mullGroups[user.station] || 'other';
             const last = localStorage.getItem('l_m_'+group+'_'+t); if(last && Date.now()-last < 1800000) return;
             db.ref('v6/mull/'+Date.now()).set({station:user.station, type:t});
@@ -334,16 +496,15 @@
 
         function updateLockButtons() {
             const now = Date.now();
-            const lW = localStorage.getItem(washLockKey());
             const btnK = document.getElementById('btnKorb');
+            const lW = localStorage.getItem(washLockKey());
             if(lW && now - Number(lW) < WASH_COOLDOWN_MS) { btnK.disabled = true; btnK.innerText = Math.ceil((WASH_COOLDOWN_MS - (now - Number(lW))) / 60000) + "M WARTEN"; } else { btnK.disabled = false; btnK.innerText = "KORB VOLL"; }
-            
             const group = mullGroups[user.station] || 'other';
-            ['REST', 'PAPIER'].forEach(t => { 
-                const lM = localStorage.getItem('l_m_'+group+'_'+t); 
-                const btn = document.getElementById('btn'+(t==='REST'?'Rest':'Papier')); 
-                if(lM && now-lM < 1800000) { btn.disabled = true; btn.innerText = "WARTEN"; } 
-                else { btn.disabled = false; btn.innerText = t; } 
+            ['REST', 'PAPIER'].forEach(t => {
+                const lM = localStorage.getItem('l_m_'+group+'_'+t);
+                const btn = document.getElementById('btn'+(t==='REST'?'Rest':'Papier'));
+                if(lM && now-lM < 1800000) { btn.disabled = true; btn.innerText = "WARTEN"; }
+                else { btn.disabled = false; btn.innerText = t; }
             });
         }
 
