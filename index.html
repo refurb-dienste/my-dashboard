@@ -26,8 +26,10 @@
         <div class="w-full max-w-md p-10 border-2 border-hellgruen/20 bg-[#1a2f23] shadow-2xl">
             <h1 class="text-3xl font-black text-center text-hellgruen uppercase mb-8 italic">Wochendienst</h1>
             <div class="space-y-4">
-                <input type="text" id="userName" list="mitarbeiterNamen" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen für Vorschläge)" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none uppercase font-bold" oninput="checkLock()">
-                <datalist id="mitarbeiterNamen"></datalist>
+                <select id="userName" autocomplete="off" spellcheck="false" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none uppercase font-bold" onchange="checkLock()">
+                    <option value="" disabled selected>NAME WÄHLEN</option>
+                </select>
+
                 <p id="lockMsg" class="text-[10px] text-yellow-400 font-bold uppercase hidden">⚠️ Dienst fest eingeteilt</p>
                 <select id="userStation" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none font-bold"></select>
                 <div class="grid grid-cols-1 gap-2 py-4 border-y border-white/10 text-sm">
@@ -275,9 +277,14 @@
         }
 
         function fillNameDatalist() {
-            const dl = document.getElementById('mitarbeiterNamen');
-            if(!dl) return;
-            dl.innerHTML = STAFF_MEMBERS.map(s => `<option value="${s.key}">${s.label}</option>`).join('');
+            const sel = document.getElementById('userName');
+            if(!sel) return;
+            STAFF_MEMBERS.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.key;
+                opt.textContent = s.label;
+                sel.appendChild(opt);
+            });
         }
 
         window.onload = () => {
@@ -343,8 +350,9 @@
 
         function doLogin() {
             const name = document.getElementById('userName').value.trim().toUpperCase();
-            if(!name) return;
+            if(!name) { alert('Bitte Namen eingeben'); return; }
             const station = document.getElementById('userStation').value;
+            if(!station) { alert('Bitte Station wählen'); return; }
             claimStation(station, name, (ok, errMsg) => {
                 if(!ok) { alert(errMsg); return; }
                 user = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked, loginTime: Date.now() };
