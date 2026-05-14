@@ -368,6 +368,7 @@
             db.ref('v6/presence/' + user.name).set({ station: user.station, services: d, time: Date.now() });
         }
 
+        function startApp() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('displayUser').innerText = user.name;
