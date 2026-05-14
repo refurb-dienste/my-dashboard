@@ -28,8 +28,7 @@
             <div class="space-y-4">
                 <div class="grid gap-3 sm:grid-cols-[1fr_10rem] items-start">
                     <div>
-                        <input type="text" id="userName" list="mitarbeiterNamen" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen für Vorschläge)" class="w-full p-3 bg-black/40 border border-white/10 text-white outline-none uppercase font-bold text-sm" oninput="checkLock(); updateNameSuggestions(this.value)">
-                        <datalist id="mitarbeiterNamen"></datalist>
+                        <input type="text" id="userName" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen oder klicken)" class="w-full p-3 bg-black/40 border border-white/10 text-white outline-none uppercase font-bold text-sm" oninput="checkLock(); updateNameSuggestions(this.value)">
                     </div>
                     <div>
                         <p class="text-[9px] uppercase opacity-50 mb-2">Vorschläge</p>
@@ -309,10 +308,14 @@
             input.focus();
         }
 
-        function fillNameDatalist() {
-            const dl = document.getElementById('mitarbeiterNamen');
-            if(!dl) return;
-            dl.innerHTML = STAFF_MEMBERS.map(s => `<option value="${s.key}">${s.label}</option>`).join('');
+        function findStaffByInput(input) {
+            const trimmed = String(input || '').trim();
+            if(!trimmed) return null;
+            const upper = trimmed.toUpperCase();
+            return STAFF_MEMBERS.find(s => s.key === upper || s.label.toUpperCase() === upper) || null;
+        }
+
+        function fillNameSuggestions() {
             updateNameSuggestions('');
         }
 
@@ -341,7 +344,7 @@
 
         window.onload = () => {
             expireSessionIfNeeded();
-            fillNameDatalist();
+            fillNameSuggestions();
             migrateLegacyMappingToDutyState();
             tryApplyPendingDuties();
             if(window._globalDutyTimer) clearInterval(window._globalDutyTimer);
@@ -386,14 +389,16 @@
         }
 
         function checkLock() {
-            const n = document.getElementById('userName').value.trim().toUpperCase();
+            const raw = document.getElementById('userName').value.trim();
+            const staff = findStaffByInput(raw);
+            const nameKey = staff ? staff.key : raw.toUpperCase();
             db.ref('v6/dutyState').once('value', s => {
                 const st = s.val() || {};
                 const map = st.activeMap || {};
                 const w = document.getElementById('checkWesche'), m = document.getElementById('checkMull'), b = document.getElementById('checkBoden');
-                const isLocked = !!map[n];
+                const isLocked = !!map[nameKey];
                 if(isLocked) {
-                    w.checked = map[n].includes("WÄSCHE"); m.checked = map[n].includes("MÜLL"); b.checked = map[n].includes("BODEN");
+                    w.checked = map[nameKey].includes("WÄSCHE"); m.checked = map[nameKey].includes("MÜLL"); b.checked = map[nameKey].includes("BODEN");
                     w.disabled = m.disabled = b.disabled = true;
                 } else {
                     w.disabled = m.disabled = b.disabled = false;
@@ -403,12 +408,14 @@
         }
 
         function doLogin() {
-            const name = document.getElementById('userName').value.trim().toUpperCase();
-            if(!name) return;
+            const rawName = document.getElementById('userName').value.trim();
+            const staff = findStaffByInput(rawName);
+            if(!staff) { alert('Bitte wähle einen Namen aus der Liste.'); return; }
+            const name = staff.key;
             const station = document.getElementById('userStation').value;
             claimStation(station, name, (ok, errMsg) => {
                 if(!ok) { alert(errMsg); return; }
-                user = { name, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked, loginTime: Date.now() };
+                user = { name, displayName: staff.label, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked, loginTime: Date.now() };
                 localStorage.setItem('refurb_v6.8', JSON.stringify(user));
                 updatePresence();
                 startApp();
@@ -425,7 +432,7 @@
             if(!user) return;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
-            document.getElementById('displayUser').innerText = user.name;
+            document.getElementById('displayUser').innerText = user.displayName || user.name;
             document.getElementById('displayStation').innerText = user.station;
             if(user.wesche) document.getElementById('weschePanel').classList.remove('hidden');
             if(user.mull) document.getElementById('mullPanel').classList.remove('hidden');
