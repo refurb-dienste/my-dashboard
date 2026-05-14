@@ -10,7 +10,7 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
         :root { --wald: #1a2f23; --dunkel: #0f1a14; --hellgruen: #4ade80; --beige: #f5f5dc; }
-        body { font-family: 'JetBrains Mono', monospace; background-color: var(--dunkel); color: var(--beige); font-size: calc(14px + 0.8mm); overflow-x: hidden; }
+        body { font-family: 'JetBrains Mono', monospace; background-color: var(--dunkel); color: var(--beige); font-size: calc(14px + 1.3mm); overflow-x: hidden; }
         .card-dark { background-color: var(--wald); border: 1px solid rgba(245, 245, 220, 0.1); }
         .btn-minimal { background-color: var(--beige); color: var(--dunkel); text-transform: uppercase; font-weight: 800; }
         .notiz-alarm { background-color: #fef08a; color: #1a2f23; border-left: 10px solid #f97316; }
@@ -48,34 +48,35 @@
                         <div class="text-xl font-black border-2 border-hellgruen px-2 text-hellgruen cursor-pointer shrink-0" title="Admin: Klick, Passwort. Dienste eintragen — ab nächstem Montag 06:00 gültig; gelber Hinweis bis dahin." onclick="adminMenu()">R</div>
                         <div class="leading-tight min-w-0">
                             <p id="displayUser" class="font-black uppercase text-sm text-white tracking-tight"></p>
-                            <p id="displayStation" class="text-[10px] opacity-40 uppercase"></p>
+                            <p id="displayStation" class="text-[11px] opacity-40 uppercase"></p>
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 justify-end">
-                        <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-2 text-[11px] w-28 bg-black/40 border border-white/10 text-white outline-none uppercase">
-                        <button onclick="sendOnlyNote()" class="text-[10px] uppercase opacity-40 hover:opacity-100">Info</button>
-                        <button id="btnKorb" onclick="sendWash()" class="bg-hellgruen text-dunkel px-3 py-2 font-black text-[11px] uppercase">Korb voll</button>
-                        <button id="btnRest" onclick="sendMull('REST')" class="bg-orange-600 px-3 py-2 font-black text-[11px] uppercase">Rest</button>
-                        <button id="btnPapier" onclick="sendMull('PAPIER')" class="bg-blue-600 px-3 py-2 font-black text-[11px] uppercase">Papier</button>
+                        <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-2 text-[12px] w-28 bg-black/40 border border-white/10 text-white outline-none uppercase">
+                        <button onclick="sendOnlyNote()" class="text-[11px] uppercase opacity-40 hover:opacity-100">Info</button>
+                        <button id="btnKorb" onclick="sendWash()" class="bg-hellgruen text-dunkel px-3 py-2 font-black text-[12px] uppercase">Korb voll</button>
+                        <button id="btnRest" onclick="sendMull('REST')" class="bg-orange-600 px-3 py-2 font-black text-[12px] uppercase">Rest</button>
+                        <button id="btnPapier" onclick="sendMull('PAPIER')" class="bg-blue-600 px-3 py-2 font-black text-[12px] uppercase">Papier</button>
                         <button onclick="logout()" class="ml-1 opacity-20 hover:opacity-100 font-bold text-sm">X</button>
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row flex-wrap items-start gap-4 border-t border-white/5 pt-3">
-                    <div id="dutyWeekBox" class="hidden card-dark border border-white/10 rounded px-3 py-2 min-w-[10rem] max-w-[18rem]">
-                        <p id="dutyPlanHeading" class="text-[10px] font-black uppercase opacity-50 mb-2 tracking-widest">Wochendienste</p>
-                        <ul id="dutyWeekList" class="text-[11px] font-bold uppercase space-y-1.5 leading-snug"></ul>
+                    <div id="dutyWeekBox" class="hidden card-dark border border-white/10 rounded px-2 py-1.5 min-w-[9rem] max-w-[20rem]">
+                        <p id="dutyPlanHeading" class="duty-compact-head text-[8px] font-black uppercase opacity-45 mb-1 tracking-widest leading-none">Wochendienste</p>
+                        <ul id="dutyWeekList" class="text-[11px] md:text-[12px] font-bold uppercase space-y-1 leading-snug"></ul>
                     </div>
                     <div id="onlineColumn" class="hidden flex-col min-w-0 flex-1 max-w-full sm:max-w-xl">
-                        <p class="text-[10px] font-black uppercase opacity-50 mb-2 tracking-widest">Online</p>
-                        <div id="onlineList" class="flex flex-wrap gap-2 overflow-x-auto py-0.5"></div>
+                        <p class="duty-compact-head text-[8px] font-black uppercase opacity-45 mb-1 tracking-widest leading-none">Online</p>
+                        <div id="onlineList" class="flex flex-nowrap gap-1.5 overflow-x-auto py-0.5 text-[9px]"></div>
                     </div>
                 </div>
             </div>
         </header>
 
         <div id="dutyPendingBanner" class="hidden w-full max-w-7xl mx-auto px-4 pt-2">
-            <div class="notiz-alarm p-3 md:p-4 shadow-lg text-[11px] md:text-xs font-bold uppercase border border-orange-400/30">
-                <span id="dutyPendingBannerText"></span>
+            <div class="notiz-alarm p-2 md:p-3 shadow-lg border border-orange-400/30 flex items-start gap-2">
+                <div id="dutyPendingBannerMain" class="flex-1 min-w-0 text-[8px] md:text-[9px] font-bold uppercase leading-snug"></div>
+                <button type="button" onclick="dismissDutyPendingBanner()" class="shrink-0 px-2 py-0.5 text-red-700 font-black text-sm leading-none hover:bg-black/10 rounded" title="Schließen">✕</button>
             </div>
         </div>
 
@@ -143,18 +144,44 @@
             return t;
         }
 
-        function dutyStringToEmojis(s) {
-            const u = String(s || '').toUpperCase();
-            let o = '';
-            if(u.includes('WÄSCHE')) o += '🧺 ';
-            if(u.includes('MÜLL')) o += '🗑️ ';
-            if(u.includes('BODEN')) o += '🧹 ';
-            return o.trim();
-        }
-
         function mapObjectToSortedList(map) {
             if(!map || typeof map !== 'object') return [];
             return Object.keys(map).sort().map(k => ({ name: k, duties: map[k] || '' }));
+        }
+
+        function getPendingDismissSignature(at, pend) {
+            if(!at || !pend || typeof pend !== 'object') return '';
+            const keys = Object.keys(pend).sort();
+            return String(at) + '|' + keys.map(k => k + ':' + String(pend[k])).join(';');
+        }
+
+        /** Zeilen: je Dienst die zugewiesenen Namen. `forBanner`: dunkle Labels auf gelbem Grund. */
+        function mapToDutyAssignmentLines(map, forBanner) {
+            if(!map || typeof map !== 'object') return [];
+            const w = [], mu = [], bo = [];
+            mapObjectToSortedList(map).forEach(l => {
+                const u = String(l.duties || '').toUpperCase();
+                if(u.includes('WÄSCHE')) w.push(l.name);
+                if(u.includes('MÜLL')) mu.push(l.name);
+                if(u.includes('BODEN')) bo.push(l.name);
+            });
+            const lab = forBanner ? 'text-[#1a2f23]' : 'opacity-65';
+            const out = [];
+            if(w.length) out.push('<span class="' + lab + '">🧺 Wäsche:</span> ' + w.map(escapeHtml).join(', '));
+            if(mu.length) out.push('<span class="' + lab + '">🗑️ Müll:</span> ' + mu.map(escapeHtml).join(', '));
+            if(bo.length) out.push('<span class="' + lab + '">🧹 Boden:</span> ' + bo.map(escapeHtml).join(', '));
+            return out;
+        }
+
+        function dismissDutyPendingBanner() {
+            db.ref('v6/dutyState').once('value', function(s) {
+                const st = s.val() || {};
+                const pend = st.pendingMap;
+                const at = st.pendingEffectiveAt;
+                if(!pend || !at || Date.now() >= at) return;
+                localStorage.setItem('dutyPendingBannerDismissSig', getPendingDismissSignature(at, pend));
+                renderDutyPlanUi(st);
+            });
         }
 
         function tryApplyPendingDuties() {
@@ -176,32 +203,59 @@
             const at = st.pendingEffectiveAt;
             const active = st.activeMap;
             const banner = document.getElementById('dutyPendingBanner');
-            const btxt = document.getElementById('dutyPendingBannerText');
+            const bmain = document.getElementById('dutyPendingBannerMain');
             const box = document.getElementById('dutyWeekBox');
             const head = document.getElementById('dutyPlanHeading');
             const ul = document.getElementById('dutyWeekList');
             if(!box || !ul || !head) return;
+
             const pendKeys = pend && typeof pend === 'object' ? Object.keys(pend) : [];
             const showPending = pendKeys.length > 0 && at && Date.now() < at;
-            if(showPending && banner && btxt) {
-                banner.classList.remove('hidden');
-                const dt = new Date(at);
-                const dateStr = dt.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
-                btxt.textContent = 'Dienste nächste Woche — gültig ab ' + dateStr + ', 06:00 Uhr (lokal).';
-            } else if(banner) banner.classList.add('hidden');
-            if(showPending) {
+            const dismissSig = getPendingDismissSignature(at, pend);
+            const dismissed = showPending && localStorage.getItem('dutyPendingBannerDismissSig') === dismissSig;
+
+            if(showPending && bmain && banner) {
+                if(!dismissed) {
+                    banner.classList.remove('hidden');
+                    const dt = new Date(at);
+                    const dateStr = dt.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+                    const lines = mapToDutyAssignmentLines(pend, true);
+                    bmain.innerHTML = '<div class="space-y-1">' +
+                        '<div class="flex flex-wrap items-baseline gap-1.5"><span class="text-sm leading-none shrink-0" aria-hidden="true">📰</span><span>Dienste nächste Woche</span></div>' +
+                        (lines.length ? '<div class="opacity-95 space-y-0.5">' + lines.map(l => '<div>' + l + '</div>').join('') + '</div>' : '') +
+                        '<div class="opacity-70 mt-1 normal-case tracking-normal text-[7px] md:text-[8px] font-bold">Gültig ab ' + escapeHtml(dateStr) + ', 06:00 Uhr (lokal).</div></div>';
+                } else {
+                    banner.classList.add('hidden');
+                    bmain.innerHTML = '';
+                }
+            } else {
+                if(banner) banner.classList.add('hidden');
+                if(bmain) bmain.innerHTML = '';
+            }
+
+            if(showPending && dismissed) {
                 head.textContent = 'Dienste nächste Woche';
-                ul.innerHTML = mapObjectToSortedList(pend).map(l => '<li><span class="text-white">' + escapeHtml(l.name) + '</span> <span class="opacity-60">' + dutyStringToEmojis(l.duties) + '</span></li>').join('');
+                const lines = mapToDutyAssignmentLines(pend, false);
+                ul.innerHTML = lines.map(l => '<li class="leading-tight">' + l + '</li>').join('');
                 box.classList.remove('hidden');
                 return;
             }
+
+            if(showPending && !dismissed) {
+                box.classList.add('hidden');
+                ul.innerHTML = '';
+                return;
+            }
+
             const actKeys = active && typeof active === 'object' ? Object.keys(active) : [];
             if(actKeys.length > 0) {
                 head.textContent = 'Wochendienste';
-                ul.innerHTML = mapObjectToSortedList(active).map(l => '<li><span class="text-white">' + escapeHtml(l.name) + '</span> <span class="opacity-60">' + dutyStringToEmojis(l.duties) + '</span></li>').join('');
+                const lines = mapToDutyAssignmentLines(active, false);
+                ul.innerHTML = lines.map(l => '<li class="leading-tight">' + l + '</li>').join('');
                 box.classList.remove('hidden');
                 return;
             }
+
             box.classList.add('hidden');
             ul.innerHTML = '';
         }
@@ -306,9 +360,6 @@
             db.ref('v6/presence/' + user.name).set({ station: user.station, services: d, time: Date.now() });
         }
 
-        function hasAnyDuty() { return user && (user.wesche || user.mull || user.boden); }
-
-        function startApp() {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             document.getElementById('displayUser').innerText = user.name;
@@ -317,6 +368,8 @@
             if(user.mull) document.getElementById('mullPanel').classList.remove('hidden');
             updatePresence();
             sync();
+            const oc = document.getElementById('onlineColumn');
+            if(oc) { oc.classList.remove('hidden'); oc.classList.add('flex'); }
             tickBodenReminder();
             if(user.boden) {
                 if(window._bodenTick) clearInterval(window._bodenTick);
@@ -332,11 +385,10 @@
                 list.innerHTML = '';
                 s.forEach(snap => {
                     const p = snap.val();
-                    list.innerHTML += `<div class="bg-white/5 px-2 py-1 rounded text-[10px] md:text-[11px] font-bold border border-white/10 whitespace-nowrap">${snap.key} @ ${p.station} ${p.services || ''}</div>`;
+                    list.innerHTML += '<div class="bg-white/5 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold border border-white/10 whitespace-nowrap shrink-0">' + escapeHtml(snap.key) + ' @ ' + escapeHtml(p.station || '') + ' ' + escapeHtml(p.services || '') + '</div>';
                 });
-                const showCol = hasAnyDuty();
-                col.classList.toggle('hidden', !showCol);
-                col.classList.toggle('flex', showCol);
+                col.classList.remove('hidden');
+                col.classList.add('flex');
             });
 
             db.ref('v6/dutyState').on('value', s => {
