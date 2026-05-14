@@ -224,17 +224,31 @@
 
         function setupDevice(id, lbl, mins, cId) {
             db.ref('v6/timers/'+id).on('value', s => {
-                const d = s.val(); const cont = document.getElementById(cId);
-                if(!d) cont.innerHTML = `<button onclick="db.ref('v6/timers/${id}').set(Date.now()+${mins*60000})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5">${lbl} ${id.slice(1)} START</button>`;
-                else {
-                    if(activeTimers[id]) clearInterval(activeTimers[id]);
+                const endTime = s.val(); const cont = document.getElementById(cId);
+                if(activeTimers[id]) clearInterval(activeTimers[id]);
+                if(!endTime) {
+                    cont.innerHTML = `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5">${lbl} ${id.slice(1)} START</button>`;
+                } else {
                     activeTimers[id] = setInterval(() => {
-                        const r = d - Date.now();
-                        if(r<=0) { cont.innerHTML = `<button onclick="db.ref('v6/timers/${id}').remove()" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic">${lbl} ${id.slice(1)} LEEREN</button>`; clearInterval(activeTimers[id]); }
-                        else { const m=Math.floor(r/60000), sec=Math.floor((r%60000)/1000); cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="db.ref('v6/timers/${id}').remove()" class="ml-2 text-red-500">STOP</button></div>`; }
+                        const r = endTime - Date.now();
+                        if(r <= 0) {
+                            cont.innerHTML = `<button onclick="stopTimer('${id}')" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic">${lbl} ${id.slice(1)} LEEREN</button>`;
+                            clearInterval(activeTimers[id]);
+                        } else {
+                            const m = Math.floor(r/60000), sec = Math.floor((r%60000)/1000);
+                            cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="stopTimer('${id}')" class="ml-2 text-red-500 uppercase">STOP</button></div>`;
+                        }
                     }, 1000);
                 }
             });
+        }
+
+        function startTimer(id, mins) {
+            db.ref('v6/timers/'+id).set(Date.now() + mins * 60000);
+        }
+
+        function stopTimer(id) {
+            db.ref('v6/timers/'+id).remove();
         }
 
         async function checkRundgang(count) {
@@ -256,19 +270,21 @@
             if(countRest >= 2 || countPapier >= 2 || (countRest + countPapier) >= 4) {
                 if(user.mull) {
                     al.innerHTML = '<div class="p-4 bg-red-600 text-white font-bold uppercase blink">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>';
-                }
-                if(!titleInterval) {
-                    titleInterval = setInterval(() => {
-                        document.title = document.title === "Müll entleeren" ? "WOCHENDIENST_MASTER v6.8" : "Müll entleeren";
-                    }, 1000);
+                    if(!titleInterval) {
+                        titleInterval = setInterval(() => {
+                            document.title = document.title === "Müll entleeren" ? "WOCHENDIENST_MASTER v6.8" : "Müll entleeren";
+                        }, 1000);
+                    }
+                } else {
+                    al.innerHTML = '';
                 }
             } else {
                 al.innerHTML = '';
-                if(titleInterval) {
-                    clearInterval(titleInterval);
-                    titleInterval = null;
-                    document.title = "WOCHENDIENST_MASTER v6.8";
-                }
+            }
+            if(titleInterval && (!user.mull || !(countRest >= 2 || countPapier >= 2 || (countRest + countPapier) >= 4))) {
+                clearInterval(titleInterval);
+                titleInterval = null;
+                document.title = "WOCHENDIENST_MASTER v6.8";
             }
         }
 
