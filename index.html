@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WOCHENDIENST_MASTER v6.8</title>
+    <title>Wochendienst</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&display=swap');
         :root { --wald: #1a2f23; --dunkel: #0f1a14; --hellgruen: #4ade80; --beige: #f5f5dc; }
-        body { font-family: 'JetBrains Mono', monospace; background-color: var(--dunkel); color: var(--beige); font-size: 14px; overflow-x: hidden; }
+        body { font-family: 'JetBrains Mono', monospace; background-color: var(--dunkel); color: var(--beige); font-size: calc(14px + 0.8mm); overflow-x: hidden; }
         .card-dark { background-color: var(--wald); border: 1px solid rgba(245, 245, 220, 0.1); }
         .btn-minimal { background-color: var(--beige); color: var(--dunkel); text-transform: uppercase; font-weight: 800; }
         .notiz-alarm { background-color: #fef08a; color: #1a2f23; border-left: 10px solid #f97316; }
@@ -42,27 +42,42 @@
 
     <div id="mainApp" class="hidden flex flex-col min-h-screen">
         <header class="border-b border-white/10 p-4 bg-[#0f1a14]/95 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto flex justify-between items-center gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="text-xl font-black border-2 border-hellgruen px-2 text-hellgruen cursor-pointer" onclick="adminMenu()">R</div>
-                    <div class="leading-tight">
-                        <p id="displayUser" class="font-black uppercase text-xs text-white"></p>
-                        <p id="displayStation" class="text-[9px] opacity-40 uppercase"></p>
+            <div class="max-w-7xl mx-auto flex flex-col gap-3">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="text-xl font-black border-2 border-hellgruen px-2 text-hellgruen cursor-pointer shrink-0" title="Admin: Klick, Passwort. Dienste eintragen — ab nächstem Montag 06:00 gültig; gelber Hinweis bis dahin." onclick="adminMenu()">R</div>
+                        <div class="leading-tight min-w-0">
+                            <p id="displayUser" class="font-black uppercase text-sm text-white tracking-tight"></p>
+                            <p id="displayStation" class="text-[10px] opacity-40 uppercase"></p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 justify-end">
+                        <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-2 text-[11px] w-28 bg-black/40 border border-white/10 text-white outline-none uppercase">
+                        <button onclick="sendOnlyNote()" class="text-[10px] uppercase opacity-40 hover:opacity-100">Info</button>
+                        <button id="btnKorb" onclick="sendWash()" class="bg-hellgruen text-dunkel px-3 py-2 font-black text-[11px] uppercase">Korb voll</button>
+                        <button id="btnRest" onclick="sendMull('REST')" class="bg-orange-600 px-3 py-2 font-black text-[11px] uppercase">Rest</button>
+                        <button id="btnPapier" onclick="sendMull('PAPIER')" class="bg-blue-600 px-3 py-2 font-black text-[11px] uppercase">Papier</button>
+                        <button onclick="logout()" class="ml-1 opacity-20 hover:opacity-100 font-bold text-sm">X</button>
                     </div>
                 </div>
-                
-                <div id="onlineList" class="hidden md:flex gap-2 overflow-x-auto py-1 px-4 border-x border-white/5 max-w-lg"></div>
-
-                <div class="flex items-center gap-2">
-                    <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-2 text-[10px] w-24 bg-black/40 border border-white/10 text-white outline-none uppercase">
-                    <button onclick="sendOnlyNote()" class="text-[9px] uppercase opacity-40 hover:opacity-100">Info</button>
-                    <button id="btnKorb" onclick="sendWash()" class="bg-hellgruen text-dunkel px-3 py-2 font-black text-[10px] uppercase">Korb voll</button>
-                    <button id="btnRest" onclick="sendMull('REST')" class="bg-orange-600 px-3 py-2 font-black text-[10px] uppercase">Rest</button>
-                    <button id="btnPapier" onclick="sendMull('PAPIER')" class="bg-blue-600 px-3 py-2 font-black text-[10px] uppercase">Papier</button>
-                    <button onclick="logout()" class="ml-2 opacity-20 hover:opacity-100 font-bold">X</button>
+                <div class="flex flex-col sm:flex-row flex-wrap items-start gap-4 border-t border-white/5 pt-3">
+                    <div id="dutyWeekBox" class="hidden card-dark border border-white/10 rounded px-3 py-2 min-w-[10rem] max-w-[18rem]">
+                        <p id="dutyPlanHeading" class="text-[10px] font-black uppercase opacity-50 mb-2 tracking-widest">Wochendienste</p>
+                        <ul id="dutyWeekList" class="text-[11px] font-bold uppercase space-y-1.5 leading-snug"></ul>
+                    </div>
+                    <div id="onlineColumn" class="hidden flex-col min-w-0 flex-1 max-w-full sm:max-w-xl">
+                        <p class="text-[10px] font-black uppercase opacity-50 mb-2 tracking-widest">Online</p>
+                        <div id="onlineList" class="flex flex-wrap gap-2 overflow-x-auto py-0.5"></div>
+                    </div>
                 </div>
             </div>
         </header>
+
+        <div id="dutyPendingBanner" class="hidden w-full max-w-7xl mx-auto px-4 pt-2">
+            <div class="notiz-alarm p-3 md:p-4 shadow-lg text-[11px] md:text-xs font-bold uppercase border border-orange-400/30">
+                <span id="dutyPendingBannerText"></span>
+            </div>
+        </div>
 
         <div id="alarmArea" class="max-w-7xl mx-auto p-4 w-full"></div>
         <div id="mullAlarmArea" class="max-w-7xl mx-auto p-4 w-full"></div>
@@ -87,8 +102,6 @@
             </div>
         </main>
 
-        <footer id="nextWeekDisplay" class="hidden bg-black/60 p-2 text-center text-[9px] uppercase tracking-widest border-t border-white/5 opacity-50"></footer>
-
         <div id="bodenReminderOverlay" class="hidden fixed inset-0 z-[700] flex items-center justify-center bg-[#0a0f0c]/95 backdrop-blur-sm p-6">
             <div class="w-full max-w-lg border-2 border-blue-500 bg-[#1a2f23] p-10 shadow-2xl text-center space-y-8">
                 <p class="text-2xl md:text-3xl font-black uppercase text-blue-300 leading-tight">🧹 Zeit, den Boden zu kehren</p>
@@ -103,7 +116,7 @@
         firebase.initializeApp(firebaseConfig); const db = firebase.database();
         let user = null; let activeTimers = {};
         const mullGroups = { '050': 'g1', '051': 'g1', '052': 'g1', '053': 'g2', '054': 'g2', '055': 'g2', '056': 'g3', '057': 'g3', '058': 'g3', '059': 'g3' };
-        const APP_TITLE = 'WOCHENDIENST_MASTER v6.8';
+        const APP_TITLE = 'Wochendienst';
         /** Anzeige + interner Name (Großbuchstaben) für Firebase / Mapping */
         const STAFF_MEMBERS = [
             { key: 'MINELA', label: 'Minela' }, { key: 'RAMONA', label: 'Ramona' }, { key: 'DANIELA', label: 'Daniela' },
@@ -114,6 +127,99 @@
         ];
         const employees = STAFF_MEMBERS.map(s => s.label);
 
+        function escapeHtml(str) {
+            if(str == null || str === '') return '';
+            const d = document.createElement('div');
+            d.textContent = String(str);
+            return d.innerHTML;
+        }
+
+        /** Nächster Montag 06:00 nach dem Zeitpunkt `from` (lokal). */
+        function nextMondaySixAfter(fromDate) {
+            const from = new Date(fromDate.getTime());
+            let t = new Date(from.getFullYear(), from.getMonth(), from.getDate(), 6, 0, 0, 0);
+            while(t.getDay() !== 1) t.setDate(t.getDate() + 1);
+            if(t <= from) t.setDate(t.getDate() + 7);
+            return t;
+        }
+
+        function dutyStringToEmojis(s) {
+            const u = String(s || '').toUpperCase();
+            let o = '';
+            if(u.includes('WÄSCHE')) o += '🧺 ';
+            if(u.includes('MÜLL')) o += '🗑️ ';
+            if(u.includes('BODEN')) o += '🧹 ';
+            return o.trim();
+        }
+
+        function mapObjectToSortedList(map) {
+            if(!map || typeof map !== 'object') return [];
+            return Object.keys(map).sort().map(k => ({ name: k, duties: map[k] || '' }));
+        }
+
+        function tryApplyPendingDuties() {
+            db.ref('v6/dutyState').once('value', function(s) {
+                const st = s.val();
+                if(!st || !st.pendingMap || !st.pendingEffectiveAt) return;
+                if(Date.now() < st.pendingEffectiveAt) return;
+                db.ref('v6/dutyState').transaction(function(curr) {
+                    if(!curr || !curr.pendingMap || !curr.pendingEffectiveAt) return curr;
+                    if(Date.now() < curr.pendingEffectiveAt) return curr;
+                    return { activeMap: curr.pendingMap, pendingMap: null, pendingEffectiveAt: null };
+                });
+            });
+        }
+
+        function renderDutyPlanUi(state) {
+            const st = state || {};
+            const pend = st.pendingMap;
+            const at = st.pendingEffectiveAt;
+            const active = st.activeMap;
+            const banner = document.getElementById('dutyPendingBanner');
+            const btxt = document.getElementById('dutyPendingBannerText');
+            const box = document.getElementById('dutyWeekBox');
+            const head = document.getElementById('dutyPlanHeading');
+            const ul = document.getElementById('dutyWeekList');
+            if(!box || !ul || !head) return;
+            const pendKeys = pend && typeof pend === 'object' ? Object.keys(pend) : [];
+            const showPending = pendKeys.length > 0 && at && Date.now() < at;
+            if(showPending && banner && btxt) {
+                banner.classList.remove('hidden');
+                const dt = new Date(at);
+                const dateStr = dt.toLocaleDateString('de-DE', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+                btxt.textContent = 'Dienste nächste Woche — gültig ab ' + dateStr + ', 06:00 Uhr (lokal).';
+            } else if(banner) banner.classList.add('hidden');
+            if(showPending) {
+                head.textContent = 'Dienste nächste Woche';
+                ul.innerHTML = mapObjectToSortedList(pend).map(l => '<li><span class="text-white">' + escapeHtml(l.name) + '</span> <span class="opacity-60">' + dutyStringToEmojis(l.duties) + '</span></li>').join('');
+                box.classList.remove('hidden');
+                return;
+            }
+            const actKeys = active && typeof active === 'object' ? Object.keys(active) : [];
+            if(actKeys.length > 0) {
+                head.textContent = 'Wochendienste';
+                ul.innerHTML = mapObjectToSortedList(active).map(l => '<li><span class="text-white">' + escapeHtml(l.name) + '</span> <span class="opacity-60">' + dutyStringToEmojis(l.duties) + '</span></li>').join('');
+                box.classList.remove('hidden');
+                return;
+            }
+            box.classList.add('hidden');
+            ul.innerHTML = '';
+        }
+
+        function migrateLegacyMappingToDutyState() {
+            db.ref('v6/dutyState').once('value', ds => {
+                const st = ds.val();
+                const hasActive = st && st.activeMap && Object.keys(st.activeMap).length;
+                const hasPending = st && st.pendingMap && Object.keys(st.pendingMap).length;
+                if(hasActive || hasPending) return;
+                db.ref('v6/mapping').once('value', ms => {
+                    const m = ms.val();
+                    if(!m || !Object.keys(m).length) return;
+                    db.ref('v6/dutyState').set({ activeMap: m, pendingMap: null, pendingEffectiveAt: null });
+                });
+            });
+        }
+
         function fillNameDatalist() {
             const dl = document.getElementById('mitarbeiterNamen');
             if(!dl) return;
@@ -122,6 +228,10 @@
 
         window.onload = () => {
             fillNameDatalist();
+            migrateLegacyMappingToDutyState();
+            tryApplyPendingDuties();
+            if(window._globalDutyTimer) clearInterval(window._globalDutyTimer);
+            window._globalDutyTimer = setInterval(tryApplyPendingDuties, 60000);
             const sel = document.getElementById('userStation');
             for(let i=50; i<=59; i++) sel.innerHTML += `<option value="WKS0${i}">WKS0${i}</option>`;
             const saved = localStorage.getItem('refurb_v6.8');
@@ -162,31 +272,18 @@
 
         function checkLock() {
             const n = document.getElementById('userName').value.trim().toUpperCase();
-            db.ref('v6/mapping').once('value', s => {
-                const map = s.val() || {};
+            db.ref('v6/dutyState').once('value', s => {
+                const st = s.val() || {};
+                const map = st.activeMap || {};
                 const w = document.getElementById('checkWesche'), m = document.getElementById('checkMull'), b = document.getElementById('checkBoden');
-                let isLocked = false;
-                if(map[n]) {
+                const isLocked = !!map[n];
+                if(isLocked) {
                     w.checked = map[n].includes("WÄSCHE"); m.checked = map[n].includes("MÜLL"); b.checked = map[n].includes("BODEN");
-                    w.disabled = m.disabled = b.disabled = true; isLocked = true;
+                    w.disabled = m.disabled = b.disabled = true;
                 } else {
-                    // Check nextWeek
-                    db.ref('v6/nextWeek').once('value', nw => {
-                        const next = nw.val() || {};
-                        const assigned = [];
-                        if(next.Wäsche && next.Wäsche.toUpperCase() === n) assigned.push("WÄSCHE");
-                        if(next.Müll && next.Müll.toUpperCase() === n) assigned.push("MÜLL");
-                        if(next.Boden && next.Boden.toUpperCase() === n) assigned.push("BODEN");
-                        if(assigned.length > 0) {
-                            w.checked = assigned.includes("WÄSCHE"); m.checked = assigned.includes("MÜLL"); b.checked = assigned.includes("BODEN");
-                            w.disabled = m.disabled = b.disabled = true; isLocked = true;
-                        } else {
-                            w.disabled = m.disabled = b.disabled = false;
-                        }
-                        document.getElementById('lockMsg').classList.toggle('hidden', !isLocked);
-                    });
+                    w.disabled = m.disabled = b.disabled = false;
                 }
-                if(!isLocked) document.getElementById('lockMsg').classList.add('hidden');
+                document.getElementById('lockMsg').classList.toggle('hidden', !isLocked);
             });
         }
 
@@ -229,24 +326,21 @@
 
         function sync() {
             db.ref('v6/presence').on('value', s => {
-                const list = document.getElementById('onlineList'); list.innerHTML = '';
+                const list = document.getElementById('onlineList');
+                const col = document.getElementById('onlineColumn');
+                if(!list || !col) return;
+                list.innerHTML = '';
                 s.forEach(snap => {
                     const p = snap.val();
-                    list.innerHTML += `<div class="bg-white/5 px-2 py-1 rounded text-[9px] font-bold border border-white/10 whitespace-nowrap">${snap.key} @ ${p.station} ${p.services || ''}</div>`;
+                    list.innerHTML += `<div class="bg-white/5 px-2 py-1 rounded text-[10px] md:text-[11px] font-bold border border-white/10 whitespace-nowrap">${snap.key} @ ${p.station} ${p.services || ''}</div>`;
                 });
-                const showOnline = hasAnyDuty() && s.numChildren() > 0;
-                list.classList.toggle('hidden', !showOnline);
+                const showCol = hasAnyDuty();
+                col.classList.toggle('hidden', !showCol);
+                col.classList.toggle('flex', showCol);
             });
 
-            db.ref('v6/nextWeek').on('value', s => {
-                const d = s.val(); const f = document.getElementById('nextWeekDisplay');
-                if(!d) { f.classList.add('hidden'); return; }
-                const now = new Date(); if(now.getDay() === 1 && now.getHours() >= 6) { db.ref('v6/nextWeek').remove(); return; }
-                f.classList.remove('hidden'); 
-                const isThisWeek = now.getDay() !== 5; // Nicht Freitag
-                const title = isThisWeek ? 'dienste diese woche' : 'Nächste Woche';
-                const text = `📢 ${title}: ${d.Wäsche || '-'} - 🧺, ${d.Müll || '-'} - 🗑️, ${d.Boden || '-'} - 🧹`;
-                f.innerText = text;
+            db.ref('v6/dutyState').on('value', s => {
+                renderDutyPlanUi(s.val());
             });
 
             db.ref('v6/wash').on('value', s => {
@@ -439,6 +533,8 @@
 
         function startRundgang() { db.ref('v6/wash').once('value', s => { s.forEach(sn => { if(sn.val().type==='KORB') sn.ref.remove(); }); }); }
 
+        function startMullRundgang() { db.ref('v6/mull').once('value', s => { s.forEach(sn => { sn.ref.remove(); }); }); }
+
         function checkMullAlert(countRest, countPapier) {
             const al = document.getElementById('mullAlarmArea');
             if(!user || !user.mull) {
@@ -455,7 +551,10 @@
             const mullCritical = countRest >= 2 || countPapier >= 2 || (countRest + countPapier) >= 4;
             if(mullCritical) {
                 stopBodenTitleBlink();
-                al.innerHTML = '<div class="p-4 bg-red-600 text-white font-bold uppercase blink">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>';
+                al.innerHTML = '<div class="space-y-3">' +
+                    '<div class="p-4 bg-red-600 text-white font-bold uppercase blink text-[11px] md:text-sm">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>' +
+                    '<button type="button" onclick="startMullRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20">🗑️ Müll-Rundgang starten (Alles erledigt)</button>' +
+                    '</div>';
                 if(!titleInterval) {
                     stopRundgangTitleBlink();
                     titleInterval = setInterval(() => {
@@ -514,24 +613,24 @@
         }
 
         function adminMenu() {
-            const pw = prompt("PW?"); if(pw !== "admin123") return;
-            const mode = prompt("1: Mapping (NAME:DIENSTE) | 2: Nächste Woche (W:Name, M:Name, B:Name)");
-            if(mode === "1") {
-                const val = prompt("Format: MAX:WÄSCHE MÜLL, TOM:BODEN");
-                if(val) { const map={}; val.split(',').forEach(p=>{ const [n,d]=p.split(':').map(x=>x.trim().toUpperCase()); map[n]=d; }); db.ref('v6/mapping').set(map); }
-            } else if(mode === "2") {
-                const empList = employees.join(', ');
-                const val = prompt(`Nächste Woche (W:Name, M:Name, B:Name)\nVerfügbare Namen: ${empList}`);
-                if(val) {
-                    const data = {}; val.split(',').forEach(p => { 
-                        const [key, name] = p.split(':').map(x=>x.trim());
-                        if(key.toUpperCase() === 'W') data.Wäsche = name;
-                        if(key.toUpperCase() === 'M') data.Müll = name;
-                        if(key.toUpperCase() === 'B') data.Boden = name;
-                    });
-                    db.ref('v6/nextWeek').set(data);
-                }
-            }
+            const pw = prompt("Admin-Passwort:");
+            if(pw !== "admin123") { if(pw !== null && pw !== "") alert("Passwort falsch."); return; }
+            const empList = employees.join(', ');
+            const val = prompt(
+                "Dienste eintragen (pro Person, bis nächsten Montag 06:00 Uhr Vorschau, danach aktiv):\n\n" +
+                "Format: MAX:WÄSCHE MÜLL, TOM:BODEN, …\n" +
+                "(Namen GROSS wie beim Login, z.B. MIRSADA)\n\n" +
+                "Vorschläge: " + empList
+            );
+            if(!val) return;
+            const map = {};
+            val.split(',').forEach(p => {
+                const [n, d] = p.split(':').map(x => x.trim().toUpperCase());
+                if(n && d) map[n] = d;
+            });
+            if(!Object.keys(map).length) return;
+            const when = nextMondaySixAfter(new Date()).getTime();
+            db.ref('v6/dutyState').update({ pendingMap: map, pendingEffectiveAt: when });
         }
         function logout() {
             if(user) {
