@@ -319,6 +319,12 @@
             updateNameSuggestions('');
         }
 
+        function stationToGroup(station) {
+            const s = String(station || '');
+            const code = s.slice(-3);
+            return mullGroups[code] || 'other';
+        }
+
         function isAfterSessionEnd(date) {
             const now = date ? new Date(date) : new Date();
             return now.getHours() >= 20;
@@ -710,10 +716,29 @@
 
         function sendMull(t) { 
             if(!user) return;
-            const group = mullGroups[user.station] || 'other';
-            const last = localStorage.getItem('l_m_'+group+'_'+t); if(last && Date.now()-last < 1800000) return;
-            db.ref('v6/mull/'+Date.now()).set({station:user.station, type:t});
-            localStorage.setItem('l_m_'+group+'_'+t, Date.now()); updateLockButtons();
+            const group = stationToGroup(user.station);
+            const last = localStorage.getItem('l_m_'+group+'_'+t);
+            if(last && Date.now() - Number(last) < 1800000) return;
+            // Check server if this group already reported this type
+            db.ref('v6/mull').once('value', snap => {
+                let exists = false;
+                snap.forEach(sn => {
+                    const v = sn.val() || {};
+                    const st = String(v.station || '');
+                    const g = stationToGroup(st);
+                    if(g === group && v.type === t) {
+                        exists = true;
+                    }
+                });
+                if(exists) {
+                    alert('Diese Gruppe hat diesen Mülleimer bereits gemeldet.');
+                    return;
+                }
+                const key = Date.now();
+                db.ref('v6/mull/' + key).set({station: user.station, type: t, group: group});
+                localStorage.setItem('l_m_'+group+'_'+t, String(Date.now()));
+                updateLockButtons();
+            });
         }
 
         function updateLockButtons() {
@@ -721,12 +746,37 @@
             const btnK = document.getElementById('btnKorb');
             const lW = localStorage.getItem(washLockKey());
             if(lW && now - Number(lW) < WASH_COOLDOWN_MS) { btnK.disabled = true; btnK.innerText = Math.ceil((WASH_COOLDOWN_MS - (now - Number(lW))) / 60000) + "M WARTEN"; } else { btnK.disabled = false; btnK.innerText = "KORB VOLL"; }
+            // Mull buttons: combine local cooldown and server-side existing reports per group
+            if(!user) return;
             const group = mullGroups[user.station] || 'other';
-            ['REST', 'PAPIER'].forEach(t => {
-                const lM = localStorage.getItem('l_m_'+group+'_'+t);
-                const btn = document.getElementById('btn'+(t==='REST'?'Rest':'Papier'));
-                if(lM && now-lM < 1800000) { btn.disabled = true; btn.innerText = "WARTEN"; }
-                else { btn.disabled = false; btn.innerText = t; }
+            const btnRest = document.getElementById('btnRest');
+            const btnPapier = document.getElementById('btnPapier');
+            const localLockRest = (() => {
+                const v = localStorage.getItem('l_m_'+group+'_REST');
+                return v && (now - Number(v) < 1800000);
+            })();
+            const localLockPapier = (() => {
+                const v = localStorage.getItem('l_m_'+group+'_PAPIER');
+                return v && (now - Number(v) < 1800000);
+            })();
+            // Default state until we learn server state
+            if(localLockRest) { btnRest.disabled = true; btnRest.innerText = "WARTEN"; } else { btnRest.disabled = false; btnRest.innerText = "REST"; }
+            if(localLockPapier) { btnPapier.disabled = true; btnPapier.innerText = "WARTEN"; } else { btnPapier.disabled = false; btnPapier.innerText = "PAPIER"; }
+            // Query server to see if this group already has a report of the given type
+            db.ref('v6/mull').once('value', snap => {
+                let hasRest = false, hasPapier = false;
+                snap.forEach(sn => {
+                    const v = sn.val() || {};
+                    const st = String(v.station || '');
+                    const code = st.slice(-3);
+                    const g = mullGroups[code] || v.group || 'other';
+                    if(g === group) {
+                        if(v.type === 'REST') hasRest = true;
+                        if(v.type === 'PAPIER') hasPapier = true;
+                    }
+                });
+                if(hasRest) { btnRest.disabled = true; btnRest.innerText = "WARTEN"; }
+                if(hasPapier) { btnPapier.disabled = true; btnPapier.innerText = "WARTEN"; }
             });
         }
 
