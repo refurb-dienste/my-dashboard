@@ -123,6 +123,8 @@
         const firebaseConfig = { apiKey: "AIzaSyBFIA8axjLxE_CDGbtSu1UiwgGl_2_HskQ", databaseURL: "https://wochendienst-v2-default-rtdb.europe-west1.firebasedatabase.app", projectId: "wochendienst-v2" };
         firebase.initializeApp(firebaseConfig); const db = firebase.database();
         let user = null; let activeTimers = {};
+        let timerDoneBlinkInterval = null;
+        let timerDoneLabel = '';
         const mullGroups = { '050': 'g1', '051': 'g1', '052': 'g1', '053': 'g2', '054': 'g2', '055': 'g2', '056': 'g3', '057': 'g3', '058': 'g3', '059': 'g3' };
         const APP_TITLE = 'Wochendienst';
         /** Anzeige + interner Name (Großbuchstaben) für Firebase / Mapping */
@@ -521,24 +523,53 @@
             const timers = document.getElementById('timerSection'); timers.innerHTML = '';
             if(user.wesche) {
                 [{m:'m1',t:'t1'},{m:'m2',t:'t2'},{m:'m3',t:'t3'}].forEach(p => {
-                    const d = document.createElement('div'); d.className="grid grid-cols-1 gap-2 p-2 border-b border-white/5"; d.innerHTML=`<div id="c-${p.m}"></div><div id="c-${p.t}"></div>`;
-                    timers.appendChild(d); setupDevice(p.m, 'Maschine', 70, `c-${p.m}`); setupDevice(p.t, 'Trockner', 90, `c-${p.t}`);
+                    const d = document.createElement('div'); d.className="grid grid-cols-1 gap-2 p-2 border-b border-white/5"; 
+                    d.innerHTML=`<div id="c-${p.m}"></div><div id="c-${p.m}-alt" style="display:none;"></div><div id="c-${p.t}"></div>`;
+                    timers.appendChild(d); 
+                    // Maschine 1 and 3: 70 min, Maschine 2: 70 and 120 min
+                    if(p.m === 'm2') {
+                        setupDevice(p.m, 'Maschine', [70, 120], `c-${p.m}`);
+                    } else {
+                        setupDevice(p.m, 'Maschine', [70], `c-${p.m}`);
+                    }
+                    setupDevice(p.t, 'Trockner', [90], `c-${p.t}`);
                 });
             }
             updateLockButtons();
         }
 
-        function setupDevice(id, lbl, mins, cId) {
+        function setupDevice(id, lbl, minsList, cId) {
             db.ref('v6/timers/'+id).on('value', s => {
-                const endTime = s.val(); const cont = document.getElementById(cId);
+                const endTime = s.val(); 
+                const cont = document.getElementById(cId);
+                if(!cont) return;
+                
                 if(activeTimers[id]) clearInterval(activeTimers[id]);
+                
                 if(!endTime) {
-                    cont.innerHTML = `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5 rounded">${lbl} ${id.slice(1)} Starten</button>`;
+                    // No timer running - show start buttons
+                    cont.innerHTML = minsList.map(mins => 
+                        `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5 rounded mb-1">${lbl} ${id.slice(1)} - ${mins}min</button>`
+                    ).join('');
                 } else {
+                    // Timer running - update countdown
                     activeTimers[id] = setInterval(() => {
                         const r = endTime - Date.now();
                         if(r <= 0) {
+                            // Timer done - blink
                             cont.innerHTML = `<button onclick="stopTimer('${id}')" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic rounded">${lbl} ${id.slice(1)} LEEREN</button>`;
+                            
+                            // Determine the label for this device
+                            let deviceLabel = '';
+                            if(id.startsWith('m')) {
+                                deviceLabel = 'Waschmaschine fertig';
+                            } else if(id.startsWith('t')) {
+                                deviceLabel = 'Trockner fertig';
+                            }
+                            
+                            // Start blinking title
+                            startTimerDoneBlinking(deviceLabel);
+                            
                             clearInterval(activeTimers[id]);
                         } else {
                             const m = Math.floor(r/60000), sec = Math.floor((r%60000)/1000);
@@ -555,6 +586,24 @@
 
         function stopTimer(id) {
             db.ref('v6/timers/'+id).remove();
+            stopTimerDoneBlinking();
+        }
+
+        function startTimerDoneBlinking(label) {
+            if(timerDoneBlinkInterval) return;
+            timerDoneLabel = label;
+            timerDoneBlinkInterval = setInterval(() => {
+                document.title = document.title === timerDoneLabel ? APP_TITLE : timerDoneLabel;
+            }, 1000);
+        }
+
+        function stopTimerDoneBlinking() {
+            if(timerDoneBlinkInterval) {
+                clearInterval(timerDoneBlinkInterval);
+                timerDoneBlinkInterval = null;
+                timerDoneLabel = '';
+                document.title = APP_TITLE;
+            }
         }
 
         let titleInterval = null;
@@ -565,7 +614,7 @@
         const BODEN_TITLE_ALT = '🧹 Boden kehren';
 
         function restoreDefaultTitleIfIdle() {
-            if(!titleInterval && !rundgangTitleInterval && !bodenTitleInterval) document.title = APP_TITLE;
+            if(!titleInterval && !rundgangTitleInterval && !bodenTitleInterval && !timerDoneBlinkInterval) document.title = APP_TITLE;
         }
 
         function stopBodenTitleBlink() {
