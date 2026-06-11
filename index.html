@@ -28,7 +28,7 @@
             <div class="space-y-4">
                 <div class="grid gap-3 sm:grid-cols-[1fr_10rem] items-start">
                     <div>
-                        <input type="text" id="userName" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen oder klicken)" class="w-full p-3 bg-black/40 border border-white/10 text-white [...]
+                        <input type="text" id="userName" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen oder klicken)" class="w-full p-3 bg-black/40 border border-white/10 text-white outline-none rounded">
                     </div>
                     <div>
                         <p class="text-[9px] uppercase opacity-50 mb-2">Vorschläge</p>
@@ -36,11 +36,11 @@
                     </div>
                 </div>
                 <p id="lockMsg" class="text-[10px] text-yellow-400 font-bold uppercase hidden">⚠️ Dienst fest eingeteilt</p>
-                <select id="userStation" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none font-bold"></select>
+                <select id="userStation" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none font-bold rounded"></select>
                 <div class="grid grid-cols-1 gap-2 py-4 border-y border-white/10 text-sm">
                     <label class="flex items-center space-x-3"><input type="checkbox" id="checkWesche" class="w-5 h-5"> <span class="font-bold uppercase">🧺 Wäsche</span></label>
-                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkMull" class="w-5 h-5 text-orange-500"> <span class="font-bold uppercase text-orange-400">🗑️ Müll</s[...]
-                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkBoden" class="w-5 h-5 text-blue-500"> <span class="font-bold uppercase text-blue-400">🧹 Boden</span></[...]
+                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkMull" class="w-5 h-5 text-orange-500"> <span class="font-bold uppercase text-orange-400">🗑️ Müll</span></label>
+                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkBoden" class="w-5 h-5 text-blue-500"> <span class="font-bold uppercase text-blue-400">🧹 Boden</span></label>
                 </div>
                 <button onclick="doLogin()" class="w-full btn-minimal p-5 tracking-widest hover:bg-hellgruen transition">Starten</button>
             </div>
@@ -52,18 +52,18 @@
             <div class="max-w-7xl mx-auto flex flex-col gap-3">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">
-                        <div class="text-xl font-black border-2 border-hellgruen px-2 text-hellgruen cursor-pointer shrink-0" title="Admin: Klick, Passwort. Dienste eintragen — ab nächstem Montag 0[...]
+                        <div class="text-xl font-black border-2 border-hellgruen px-2 text-hellgruen cursor-pointer shrink-0" onclick="adminMenu()" title="Admin: Klick, Passwort. Dienste eintragen — ab nächstem Montag 06:00">W</div>
                         <div class="leading-tight min-w-0">
                             <p id="displayUser" class="font-black uppercase text-sm text-white tracking-tight"></p>
                             <p id="displayStation" class="text-[11px] opacity-40 uppercase"></p>
                         </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 justify-end">
-                        <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-2 text-[12px] w-28 bg-black/40 border border-white/10 text-white outline-none uppercase">
+                        <input type="text" id="userNotiz" placeholder="NOTIZ..." class="p-2 text-[12px] w-28 bg-black/40 border border-white/10 text-white outline-none uppercase rounded">
                         <button onclick="sendOnlyNote()" class="text-[11px] uppercase opacity-40 hover:opacity-100">Info</button>
-                        <button id="btnKorb" onclick="sendWash()" class="bg-hellgruen text-dunkel px-3 py-2 font-black text-[12px] uppercase">Korb voll</button>
-                        <button id="btnRest" onclick="sendMull('REST')" class="bg-orange-600 px-3 py-2 font-black text-[12px] uppercase">Rest</button>
-                        <button id="btnPapier" onclick="sendMull('PAPIER')" class="bg-blue-600 px-3 py-2 font-black text-[12px] uppercase">Papier</button>
+                        <button id="btnKorb" onclick="sendWash()" class="bg-hellgruen text-dunkel px-3 py-2 font-black text-[12px] uppercase rounded">Korb voll</button>
+                        <button id="btnRest" onclick="sendMull('REST')" class="bg-orange-600 px-3 py-2 font-black text-[12px] uppercase rounded">Rest</button>
+                        <button id="btnPapier" onclick="sendMull('PAPIER')" class="bg-blue-600 px-3 py-2 font-black text-[12px] uppercase rounded">Papier</button>
                         <button onclick="logout()" class="ml-1 opacity-20 hover:opacity-100 font-bold text-sm">X</button>
                     </div>
                 </div>
@@ -81,9 +81,9 @@
         </header>
 
         <div id="dutyPendingBanner" class="hidden w-full max-w-7xl mx-auto px-4 pt-2">
-            <div class="notiz-alarm p-2 md:p-3 shadow-lg border border-orange-400/30 flex items-start gap-2">
+            <div class="notiz-alarm p-2 md:p-3 shadow-lg border border-orange-400/30 flex items-start gap-2 rounded">
                 <div id="dutyPendingBannerMain" class="flex-1 min-w-0 text-[8px] md:text-[9px] font-bold uppercase leading-snug"></div>
-                <button type="button" onclick="dismissDutyPendingBanner()" class="shrink-0 px-2 py-0.5 text-red-700 font-black text-sm leading-none hover:bg-black/10 rounded" title="Schließen">✕</b[...]
+                <button type="button" onclick="dismissDutyPendingBanner()" class="shrink-0 px-2 py-0.5 text-red-700 font-black text-sm leading-none hover:bg-black/10 rounded" title="Schließen">✕</button>
             </div>
         </div>
 
@@ -92,11 +92,11 @@
 
         <main class="flex-grow max-w-7xl mx-auto p-4 md:p-8 w-full space-y-6">
             <div id="weschePanel" class="hidden space-y-6">
-                <div id="notizMonitor" class="hidden notiz-alarm p-4 shadow-lg text-sm font-bold uppercase">
+                <div id="notizMonitor" class="hidden notiz-alarm p-4 shadow-lg text-sm font-bold uppercase rounded">
                     <div id="notizList" class="space-y-1"></div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 card-dark p-6">
+                    <div class="lg:col-span-2 card-dark p-6 rounded">
                         <h3 class="text-[10px] font-black opacity-30 uppercase mb-4 italic">Offene Abholungen</h3>
                         <div id="wescheList" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
                     </div>
@@ -104,17 +104,17 @@
                 </div>
             </div>
             
-            <div id="mullPanel" class="hidden card-dark p-6">
+            <div id="mullPanel" class="hidden card-dark p-6 rounded">
                 <h3 class="text-[10px] font-black opacity-30 uppercase mb-4 italic text-orange-500">Mülldienst</h3>
                 <div id="mullList" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-bold uppercase"></div>
             </div>
         </main>
 
         <div id="bodenReminderOverlay" class="hidden fixed inset-0 z-[700] flex items-center justify-center bg-[#0a0f0c]/95 backdrop-blur-sm p-6">
-            <div class="w-full max-w-lg border-2 border-blue-500 bg-[#1a2f23] p-10 shadow-2xl text-center space-y-8">
+            <div class="w-full max-w-lg border-2 border-blue-500 bg-[#1a2f23] p-10 shadow-2xl text-center space-y-8 rounded">
                 <p class="text-2xl md:text-3xl font-black uppercase text-blue-300 leading-tight">🧹 Zeit, den Boden zu kehren</p>
                 <p class="text-xs uppercase opacity-50 tracking-widest">Bodendienst · täglich ab 14:00</p>
-                <button type="button" onclick="dismissBodenReminder()" class="w-full btn-minimal p-5 text-base tracking-widest hover:bg-blue-500 hover:text-white transition">Erledigt ✓</button>
+                <button type="button" onclick="dismissBodenReminder()" class="w-full btn-minimal p-5 text-base tracking-widest hover:bg-blue-500 hover:text-white transition rounded">Erledigt ✓</button>
             </div>
         </div>
     </div>
@@ -295,7 +295,7 @@
                 return;
             }
             list.innerHTML = matches.map(s =>
-                `<button type="button" onclick="selectSuggestedName('${s.label.replace(/'/g, "\\'") }')" class="w-full text-left px-2 py-1 rounded uppercase hover:bg-hellgruen/20 transition text-[10px[...]
+                `<button type="button" onclick="selectSuggestedName('${s.label.replace(/'/g, "\\'") }')" class="w-full text-left px-2 py-1 rounded uppercase hover:bg-hellgruen/20 transition text-[10px]">${escapeHtml(s.label)}</button>`
             ).join('');
         }
 
@@ -373,6 +373,15 @@
                     });
                 }
             }
+            // Add event listeners for name input
+            const nameInput = document.getElementById('userName');
+            if(nameInput) {
+                nameInput.addEventListener('input', (e) => {
+                    updateNameSuggestions(e.target.value);
+                    checkLock();
+                });
+                nameInput.addEventListener('focus', fillNameSuggestions);
+            }
         }
 
         /** Eine WKS = max. eine Person (Name) gleichzeitig; bei Verbindungsabbruch wird die Belegung automatisch gelöscht. */
@@ -421,7 +430,7 @@
             const station = document.getElementById('userStation').value;
             claimStation(station, name, (ok, errMsg) => {
                 if(!ok) { alert(errMsg); return; }
-                user = { name, displayName: staff.label, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElement[...]
+                user = { name, displayName: staff.label, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked, loginTime: Date.now() };
                 localStorage.setItem('refurb_v6.8', JSON.stringify(user));
                 updatePresence();
                 startApp();
@@ -462,7 +471,7 @@
                 list.innerHTML = '';
                 s.forEach(snap => {
                     const p = snap.val();
-                    list.innerHTML += '<div class="bg-white/5 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold border border-white/10 whitespace-nowrap shrink-0">' + escapeHtml(snap.key) + ' @[...]
+                    list.innerHTML += '<div class="bg-white/5 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold border border-white/10 whitespace-nowrap shrink-0">' + escapeHtml(snap.key) + ' @' + escapeHtml(p.station || '?') + ' ' + (p.services || '') + '</div>';
                 });
                 col.classList.remove('hidden');
                 col.classList.add('flex');
@@ -484,8 +493,8 @@
                 list.innerHTML = ''; nList.innerHTML = ''; let count = 0; let hasNote = false;
                 s.forEach(snap => {
                     const i = snap.val();
-                    if(i.type === 'KORB') { count++; list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase">${i.station}<br><span class="opa[...]
-                    if(i.note) { hasNote = true; nList.innerHTML += `<div class="flex justify-between items-center border-b border-black/5 pb-1"><span>${i.station}: ${i.note}</span><button onclick="db[...]
+                    if(i.type === 'KORB') { count++; list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase rounded">${escapeHtml(i.station)}<br><span class="opacity-50 text-[9px]">${escapeHtml(i.user || '')}</span></div>`; }
+                    if(i.note) { hasNote = true; nList.innerHTML += `<div class="flex justify-between items-center border-b border-black/5 pb-1"><span>${escapeHtml(i.station)}: ${escapeHtml(i.note)}</span><button onclick="db.ref('v6/wash/${snap.key}').remove()" class="text-red-500 text-[9px]">✕</button></div>`; }
                 });
                 document.getElementById('notizMonitor').classList.toggle('hidden', !hasNote);
                 checkRundgang(count);
@@ -504,7 +513,7 @@
                     const type = snap.val().type;
                     if(type === 'REST') countRest++;
                     else if(type === 'PAPIER') countPapier++;
-                    list.innerHTML += `<div class="p-3 card-dark border-l-4 ${type==='REST'?'border-orange-500':'border-blue-500'} font-bold">${type}<br>${snap.val().station} <button onclick="db.ref('[...]
+                    list.innerHTML += `<div class="p-3 card-dark border-l-4 ${type==='REST'?'border-orange-500':'border-blue-500'} font-bold rounded">${type}<br>${escapeHtml(snap.val().station)} <button onclick="db.ref('v6/mull/${snap.key}').remove()" class="text-red-500 text-[9px]">✕</button></div>`;
                 });
                 checkMullAlert(countRest, countPapier);
             });
@@ -524,16 +533,16 @@
                 const endTime = s.val(); const cont = document.getElementById(cId);
                 if(activeTimers[id]) clearInterval(activeTimers[id]);
                 if(!endTime) {
-                    cont.innerHTML = `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5">${[...]
+                    cont.innerHTML = `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5 rounded">${lbl} ${id.slice(1)} Starten</button>`;
                 } else {
                     activeTimers[id] = setInterval(() => {
                         const r = endTime - Date.now();
                         if(r <= 0) {
-                            cont.innerHTML = `<button onclick="stopTimer('${id}')" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic">${lbl} ${id.slice(1)} LEEREN</[...]
+                            cont.innerHTML = `<button onclick="stopTimer('${id}')" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic rounded">${lbl} ${id.slice(1)} LEEREN</button>`;
                             clearInterval(activeTimers[id]);
                         } else {
                             const m = Math.floor(r/60000), sec = Math.floor((r%60000)/1000);
-                            cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="[...]
+                            cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic rounded">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="stopTimer('${id}')" class="ml-1 text-red-500 text-[9px]">✕</button></div>`;
                         }
                     }, 1000);
                 }
@@ -651,7 +660,7 @@
             const allFree = !t.m1 && !t.m2 && !t.m3 && !t.t1 && !t.t2 && !t.t3;
             if(count >= 3 && allFree) {
                 stopBodenTitleBlink();
-                al.innerHTML = `<button onclick="startRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20">🧺 Rundg[...]
+                al.innerHTML = `<button onclick="startRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20 rounded">🧺 Rundgang starten</button>`;
                 rundgangTitleShouldBlink = true;
                 maybeStartRundgangTitleBlink();
             } else {
@@ -681,8 +690,8 @@
             if(mullCritical) {
                 stopBodenTitleBlink();
                 al.innerHTML = '<div class="space-y-3">' +
-                    '<div class="p-4 bg-red-600 text-white font-bold uppercase blink text-[11px] md:text-sm">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>' +
-                    '<button type="button" onclick="startMullRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20">󰁝[...]
+                    '<div class="p-4 bg-red-600 text-white font-bold uppercase blink text-[11px] md:text-sm rounded">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>' +
+                    '<button type="button" onclick="startMullRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20 rounded">🗑️ Müll-Rundgang starten</button>' +
                     '</div>';
                 if(!titleInterval) {
                     stopRundgangTitleBlink();
@@ -745,7 +754,7 @@
             const now = Date.now();
             const btnK = document.getElementById('btnKorb');
             const lW = localStorage.getItem(washLockKey());
-            if(lW && now - Number(lW) < WASH_COOLDOWN_MS) { btnK.disabled = true; btnK.innerText = Math.ceil((WASH_COOLDOWN_MS - (now - Number(lW))) / 60000) + "M WARTEN"; } else { btnK.disabled = fal[...]
+            if(lW && now - Number(lW) < WASH_COOLDOWN_MS) { btnK.disabled = true; btnK.innerText = Math.ceil((WASH_COOLDOWN_MS - (now - Number(lW))) / 60000) + "M WARTEN"; } else { btnK.disabled = false; btnK.innerText = "KORB VOLL"; }
             // Mull buttons: combine local cooldown and server-side existing reports per group
             if(!user) return;
             const group = mullGroups[user.station] || 'other';
