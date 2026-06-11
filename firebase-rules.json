@@ -1,0 +1,34 @@
+{
+  "rules": {
+    "v6": {
+      "stationClaims": {
+        ".read": true,
+        ".write": true
+      },
+      "presence": {
+        ".read": true,
+        ".write": true
+      },
+      "wash": {
+        ".read": true,
+        ".write": true
+      },
+      "mull": {
+        ".read": true,
+        ".write": true
+      },
+      "timers": {
+        ".read": true,
+        ".write": true
+      },
+      "dutyState": {
+        ".read": true,
+        ".write": true
+      },
+      "mapping": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}
