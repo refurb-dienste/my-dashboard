@@ -28,7 +28,7 @@
             <div class="space-y-4">
                 <div class="grid gap-3 sm:grid-cols-[1fr_10rem] items-start">
                     <div>
-                        <input type="text" id="userName" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen oder klicken)" class="w-full p-3 bg-black/40 border border-white/10 text-white outline-none uppercase font-bold text-sm" oninput="checkLock(); updateNameSuggestions(this.value)">
+                        <input type="text" id="userName" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen oder klicken)" class="w-full p-3 bg-black/40 border border-white/10 text-white [...]
                     </div>
                     <div>
                         <p class="text-[9px] uppercase opacity-50 mb-2">Vorschläge</p>
@@ -39,8 +39,8 @@
                 <select id="userStation" class="w-full p-4 bg-black/40 border border-white/10 text-white outline-none font-bold"></select>
                 <div class="grid grid-cols-1 gap-2 py-4 border-y border-white/10 text-sm">
                     <label class="flex items-center space-x-3"><input type="checkbox" id="checkWesche" class="w-5 h-5"> <span class="font-bold uppercase">🧺 Wäsche</span></label>
-                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkMull" class="w-5 h-5 text-orange-500"> <span class="font-bold uppercase text-orange-400">🗑️ Müll</span></label>
-                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkBoden" class="w-5 h-5 text-blue-500"> <span class="font-bold uppercase text-blue-400">🧹 Boden</span></label>
+                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkMull" class="w-5 h-5 text-orange-500"> <span class="font-bold uppercase text-orange-400">🗑️ Müll</s[...]
+                    <label class="flex items-center space-x-3"><input type="checkbox" id="checkBoden" class="w-5 h-5 text-blue-500"> <span class="font-bold uppercase text-blue-400">🧹 Boden</span></[...]
                 </div>
                 <button onclick="doLogin()" class="w-full btn-minimal p-5 tracking-widest hover:bg-hellgruen transition">Starten</button>
             </div>
@@ -52,7 +52,7 @@
             <div class="max-w-7xl mx-auto flex flex-col gap-3">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">
-                        <div class="text-xl font-black border-2 border-hellgruen px-2 text-hellgruen cursor-pointer shrink-0" title="Admin: Klick, Passwort. Dienste eintragen — ab nächstem Montag 06:00 gültig; gelber Hinweis bis dahin." onclick="adminMenu()">R</div>
+                        <div class="text-xl font-black border-2 border-hellgruen px-2 text-hellgruen cursor-pointer shrink-0" title="Admin: Klick, Passwort. Dienste eintragen — ab nächstem Montag 0[...]
                         <div class="leading-tight min-w-0">
                             <p id="displayUser" class="font-black uppercase text-sm text-white tracking-tight"></p>
                             <p id="displayStation" class="text-[11px] opacity-40 uppercase"></p>
@@ -83,7 +83,7 @@
         <div id="dutyPendingBanner" class="hidden w-full max-w-7xl mx-auto px-4 pt-2">
             <div class="notiz-alarm p-2 md:p-3 shadow-lg border border-orange-400/30 flex items-start gap-2">
                 <div id="dutyPendingBannerMain" class="flex-1 min-w-0 text-[8px] md:text-[9px] font-bold uppercase leading-snug"></div>
-                <button type="button" onclick="dismissDutyPendingBanner()" class="shrink-0 px-2 py-0.5 text-red-700 font-black text-sm leading-none hover:bg-black/10 rounded" title="Schließen">✕</button>
+                <button type="button" onclick="dismissDutyPendingBanner()" class="shrink-0 px-2 py-0.5 text-red-700 font-black text-sm leading-none hover:bg-black/10 rounded" title="Schließen">✕</b[...]
             </div>
         </div>
 
@@ -120,7 +120,7 @@
     </div>
 
     <script>
-        const firebaseConfig = { apiKey: "AIzaSyBjxSsvcZT0HVM9XDSFli8HYstQdnI-9UQ", databaseURL: "https://dienste-fluxs-default-rtdb.europe-west1.firebasedatabase.app/", projectId: "dienste-fluxs" };
+        const firebaseConfig = { apiKey: "AIzaSyBFIA8axjLxE_CDGbtSu1UiwgGl_2_HskQ", databaseURL: "https://wochendienst-v2-default-rtdb.europe-west1.firebasedatabase.app", projectId: "wochendienst-v2" };
         firebase.initializeApp(firebaseConfig); const db = firebase.database();
         let user = null; let activeTimers = {};
         const mullGroups = { '050': 'g1', '051': 'g1', '052': 'g1', '053': 'g2', '054': 'g2', '055': 'g2', '056': 'g3', '057': 'g3', '058': 'g3', '059': 'g3' };
@@ -295,7 +295,7 @@
                 return;
             }
             list.innerHTML = matches.map(s =>
-                `<button type="button" onclick="selectSuggestedName('${s.label.replace(/'/g, "\\'") }')" class="w-full text-left px-2 py-1 rounded uppercase hover:bg-hellgruen/20 transition text-[10px]">${escapeHtml(s.label)}</button>`
+                `<button type="button" onclick="selectSuggestedName('${s.label.replace(/'/g, "\\'") }')" class="w-full text-left px-2 py-1 rounded uppercase hover:bg-hellgruen/20 transition text-[10px[...]
             ).join('');
         }
 
@@ -421,7 +421,7 @@
             const station = document.getElementById('userStation').value;
             claimStation(station, name, (ok, errMsg) => {
                 if(!ok) { alert(errMsg); return; }
-                user = { name, displayName: staff.label, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElementById('checkBoden').checked, loginTime: Date.now() };
+                user = { name, displayName: staff.label, station, wesche: document.getElementById('checkWesche').checked, mull: document.getElementById('checkMull').checked, boden: document.getElement[...]
                 localStorage.setItem('refurb_v6.8', JSON.stringify(user));
                 updatePresence();
                 startApp();
@@ -462,7 +462,7 @@
                 list.innerHTML = '';
                 s.forEach(snap => {
                     const p = snap.val();
-                    list.innerHTML += '<div class="bg-white/5 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold border border-white/10 whitespace-nowrap shrink-0">' + escapeHtml(snap.key) + ' @ ' + escapeHtml(p.station || '') + ' ' + escapeHtml(p.services || '') + '</div>';
+                    list.innerHTML += '<div class="bg-white/5 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold border border-white/10 whitespace-nowrap shrink-0">' + escapeHtml(snap.key) + ' @[...]
                 });
                 col.classList.remove('hidden');
                 col.classList.add('flex');
@@ -484,8 +484,8 @@
                 list.innerHTML = ''; nList.innerHTML = ''; let count = 0; let hasNote = false;
                 s.forEach(snap => {
                     const i = snap.val();
-                    if(i.type === 'KORB') { count++; list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase">${i.station}<br><span class="opacity-30 text-[8px]">${i.user}</span><button onclick="db.ref('v6/wash/${snap.key}').remove()" class="absolute right-2 top-2 font-black text-hellgruen">✓</button></div>`; }
-                    if(i.note) { hasNote = true; nList.innerHTML += `<div class="flex justify-between items-center border-b border-black/5 pb-1"><span>${i.station}: ${i.note}</span><button onclick="db.ref('v6/wash/${snap.key}').update({note:null})" class="text-red-500 ml-2">X</button></div>`; }
+                    if(i.type === 'KORB') { count++; list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase">${i.station}<br><span class="opa[...]
+                    if(i.note) { hasNote = true; nList.innerHTML += `<div class="flex justify-between items-center border-b border-black/5 pb-1"><span>${i.station}: ${i.note}</span><button onclick="db[...]
                 });
                 document.getElementById('notizMonitor').classList.toggle('hidden', !hasNote);
                 checkRundgang(count);
@@ -504,7 +504,7 @@
                     const type = snap.val().type;
                     if(type === 'REST') countRest++;
                     else if(type === 'PAPIER') countPapier++;
-                    list.innerHTML += `<div class="p-3 card-dark border-l-4 ${type==='REST'?'border-orange-500':'border-blue-500'} font-bold">${type}<br>${snap.val().station} <button onclick="db.ref('v6/mull/${snap.key}').remove()" class="text-[8px] underline ml-2 opacity-30">ERLEDIGT</button></div>`; 
+                    list.innerHTML += `<div class="p-3 card-dark border-l-4 ${type==='REST'?'border-orange-500':'border-blue-500'} font-bold">${type}<br>${snap.val().station} <button onclick="db.ref('[...]
                 });
                 checkMullAlert(countRest, countPapier);
             });
@@ -524,16 +524,16 @@
                 const endTime = s.val(); const cont = document.getElementById(cId);
                 if(activeTimers[id]) clearInterval(activeTimers[id]);
                 if(!endTime) {
-                    cont.innerHTML = `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5">${lbl} ${id.slice(1)} START</button>`;
+                    cont.innerHTML = `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5">${[...]
                 } else {
                     activeTimers[id] = setInterval(() => {
                         const r = endTime - Date.now();
                         if(r <= 0) {
-                            cont.innerHTML = `<button onclick="stopTimer('${id}')" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic">${lbl} ${id.slice(1)} LEEREN</button>`;
+                            cont.innerHTML = `<button onclick="stopTimer('${id}')" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic">${lbl} ${id.slice(1)} LEEREN</[...]
                             clearInterval(activeTimers[id]);
                         } else {
                             const m = Math.floor(r/60000), sec = Math.floor((r%60000)/1000);
-                            cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="stopTimer('${id}')" class="ml-2 text-red-500 uppercase">STOP</button></div>`;
+                            cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="[...]
                         }
                     }, 1000);
                 }
@@ -651,7 +651,7 @@
             const allFree = !t.m1 && !t.m2 && !t.m3 && !t.t1 && !t.t2 && !t.t3;
             if(count >= 3 && allFree) {
                 stopBodenTitleBlink();
-                al.innerHTML = `<button onclick="startRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20">🧺 Rundgang starten (Alles leeren)</button>`;
+                al.innerHTML = `<button onclick="startRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20">🧺 Rundg[...]
                 rundgangTitleShouldBlink = true;
                 maybeStartRundgangTitleBlink();
             } else {
@@ -682,7 +682,7 @@
                 stopBodenTitleBlink();
                 al.innerHTML = '<div class="space-y-3">' +
                     '<div class="p-4 bg-red-600 text-white font-bold uppercase blink text-[11px] md:text-sm">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>' +
-                    '<button type="button" onclick="startMullRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20">🗑️ Müll-Rundgang starten (Alles erledigt)</button>' +
+                    '<button type="button" onclick="startMullRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20">󰁝[...]
                     '</div>';
                 if(!titleInterval) {
                     stopRundgangTitleBlink();
@@ -745,7 +745,7 @@
             const now = Date.now();
             const btnK = document.getElementById('btnKorb');
             const lW = localStorage.getItem(washLockKey());
-            if(lW && now - Number(lW) < WASH_COOLDOWN_MS) { btnK.disabled = true; btnK.innerText = Math.ceil((WASH_COOLDOWN_MS - (now - Number(lW))) / 60000) + "M WARTEN"; } else { btnK.disabled = false; btnK.innerText = "KORB VOLL"; }
+            if(lW && now - Number(lW) < WASH_COOLDOWN_MS) { btnK.disabled = true; btnK.innerText = Math.ceil((WASH_COOLDOWN_MS - (now - Number(lW))) / 60000) + "M WARTEN"; } else { btnK.disabled = fal[...]
             // Mull buttons: combine local cooldown and server-side existing reports per group
             if(!user) return;
             const group = mullGroups[user.station] || 'other';
