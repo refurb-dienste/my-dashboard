@@ -478,7 +478,7 @@
                 list.innerHTML = '';
                 s.forEach(snap => {
                     const p = snap.val();
-                    list.innerHTML += '<div class="bg-white/5 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold border border-white/10 whitespace-nowrap shrink-0">' + escapeHtml(snap.key) + ' @ ' + escapeHtml(p.station) + ' ' + (p.services || '') + '</div>';
+                    list.innerHTML += '<div class="bg-white/5 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold border border-white/10 whitespace-nowrap shrink-0">' + escapeHtml(snap.key) + ' ' + escapeHtml(p.services) + '</div>';
                 });
                 col.classList.remove('hidden');
                 col.classList.add('flex');
@@ -493,7 +493,7 @@
                 list.innerHTML = ''; let count = 0;
                 s.forEach(snap => {
                     const i = snap.val();
-                    if(i.type === 'KORB') { count++; list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase rounded">${escapeHtml(i.station)}</div>`; }
+                    if(i.type === 'KORB') { count++; list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase rounded">${escapeHtml(i.station)}<br><span class="opacity-50 text-[10px]">${formatDateTime(Number(snap.key))}</span></div>`; }
                 });
                 if(user && user.wesche) {
                     checkRundgang(count);
@@ -559,7 +559,7 @@
                         const displayName = staff ? staff.label : i.user;
                         const dateTime = formatDateTime(Number(snap.key));
                         const noteKey = snap.key;
-                        nList.innerHTML += `<div class="flex justify-between items-start border-b border-black/5 pb-2 group"><div class="flex-1"><div class="flex justify-between items-baseline"><span><strong>${escapeHtml(displayName)}</strong> (${escapeHtml(i.station)}): ${escapeHtml(i.note)}</span></div><div class="text-[8px] opacity-50 mt-0.5">${escapeHtml(dateTime)}</div></div><button type="button" onclick="deleteNote('${noteKey}')" class="ml-2 px-2 py-0.5 text-red-500 font-black text-xs opacity-0 group-hover:opacity-100 transition hover:bg-black/20 rounded shrink-0">✕</button></div>`;
+                        nList.innerHTML += `<div class="flex justify-between items-start border-b border-black/5 pb-2 group"><div class="flex-1"><div class="flex justify-between items-baseline"><span class="font-bold">${escapeHtml(displayName)}</span> <span class="text-[8px] opacity-50">${escapeHtml(dateTime)}</span></div><div class="text-[10px] opacity-80 mt-1">${escapeHtml(i.note)}</div></div><button onclick="deleteNote(${noteKey})" class="ml-2 px-2 py-1 text-red-500 opacity-0 group-hover:opacity-100 text-[10px] font-bold">×</button></div>`;
                     }
                 });
                 monitor.classList.toggle('hidden', !hasNote);
@@ -576,13 +576,13 @@
                 
                 if(!endTime) {
                     cont.innerHTML = minsList.map(mins => 
-                        `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5 rounded mb-1">${lbl} ${id.slice(1)}: ${mins}min</button>`
+                        `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5 rounded mb-1">${mins} Min</button>`
                     ).join('');
                 } else {
                     activeTimers[id] = setInterval(() => {
                         const r = endTime - Date.now();
                         if(r <= 0) {
-                            cont.innerHTML = `<button onclick="stopTimer('${id}')" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic rounded">${lbl} ${id.slice(1)}: FERTIG!</button>`;
+                            cont.innerHTML = `<button onclick="stopTimer('${id}')" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic rounded">${lbl} ${id.slice(1)}: FERTIG</button>`;
                             
                             let deviceLabel = '';
                             if(id.startsWith('m')) {
@@ -595,7 +595,7 @@
                             clearInterval(activeTimers[id]);
                         } else {
                             const m = Math.floor(r/60000), sec = Math.floor((r%60000)/1000);
-                            cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic rounded">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="stopTimer('${id}')" class="text-red-400 hover:text-red-200">✕</button></div>`;
+                            cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic rounded">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="stopTimer('${id}')" class="ml-1 text-red-400 hover:text-red-600">✕</button></div>`;
                         }
                     }, 1000);
                 }
@@ -731,7 +731,7 @@
             const allFree = !t.m1 && !t.m2 && !t.m3 && !t.t1 && !t.t2 && !t.t3;
             if(count >= 3 && allFree) {
                 stopBodenTitleBlink();
-                al.innerHTML = `<button onclick="startRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20 rounded">🧺 Rundgang starten!</button>`;
+                al.innerHTML = `<button onclick="startRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20 rounded">🧺 Rundgang starten (${count} Körbe)</button>`;
                 rundgangTitleShouldBlink = true;
                 maybeStartRundgangTitleBlink();
             } else {
@@ -762,7 +762,7 @@
                 stopBodenTitleBlink();
                 al.innerHTML = '<div class="space-y-3">' +
                     '<div class="p-4 bg-red-600 text-white font-bold uppercase blink text-[11px] md:text-sm rounded">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>' +
-                    '<button type="button" onclick="startMullRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20 rounded">🗑️ Müll entleeren!</button>' +
+                    '<button type="button" onclick="startMullRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20 rounded">🗑️ Mülltour starten</button>' +
                     '</div>';
                 if(!titleInterval) {
                     stopRundgangTitleBlink();
@@ -824,7 +824,7 @@
             const now = Date.now();
             const btnK = document.getElementById('btnKorb');
             const lW = localStorage.getItem(washLockKey());
-            if(lW && now - Number(lW) < WASH_COOLDOWN_MS) { btnK.disabled = true; btnK.innerText = Math.ceil((WASH_COOLDOWN_MS - (now - Number(lW))) / 60000) + "M WARTEN"; } else { btnK.disabled = false; btnK.innerText = "KORB VOLL"; }
+            if(lW && now - Number(lW) < WASH_COOLDOWN_MS) { btnK.disabled = true; btnK.innerText = Math.ceil((WASH_COOLDOWN_MS - (now - Number(lW))) / 60000) + "M WARTEN"; } else { btnK.disabled = false; btnK.innerText = "Korb voll"; }
             if(!user) return;
             const group = mullGroups[user.station] || 'other';
             const btnRest = document.getElementById('btnRest');
@@ -879,7 +879,13 @@
             });
             if(!Object.keys(map).length) return;
             const when = nextMondaySixAfter(new Date()).getTime();
-            db.ref('v6/dutyState').update({ pendingMap: map, pendingEffectiveAt: when });
+            db.ref('v6/dutyState').update({ pendingMap: map, pendingEffectiveAt: when }, (error) => {
+                if (error) {
+                    alert('Fehler beim Speichern: ' + error.message);
+                } else {
+                    alert('Dienste erfolgreich eingetragen! Gültig ab ' + new Date(when).toLocaleString('de-DE'));
+                }
+            });
         }
         
         function logout() {
