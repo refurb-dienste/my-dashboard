@@ -28,7 +28,7 @@
             <div class="space-y-4">
                 <div class="grid gap-3 sm:grid-cols-[1fr_10rem] items-start">
                     <div>
-                        <input type="text" id="userName" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen oder klicken)" class="w-full p-3 bg-black/40 border border-white/10 text-white outline-none rounded">
+                        <input type="text" id="userName" autocomplete="off" spellcheck="false" placeholder="NAME (Tippen oder klicken)" class="w-full p-3 bg-black/40 border border-white/10 text-white outline-none uppercase rounded">
                     </div>
                     <div>
                         <p class="text-[9px] uppercase opacity-50 mb-2">Vorschläge</p>
@@ -52,7 +52,7 @@
             <div class="max-w-7xl mx-auto flex flex-col gap-3">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-3 min-w-0">
-                        <div class="text-xl font-black border-2 border-hellgruen px-2 text-hellgruen cursor-pointer shrink-0" onclick="adminMenu()" title="Admin: Klick, Passwort. Dienste eintragen — ab nächstem Montag 06:00">W</div>
+                        <div class="text-xl font-black border-2 border-hellgruen px-2 text-hellgruen cursor-pointer shrink-0" onclick="adminMenu()" title="Admin: Klick, Passwort. Dienste eintragen">W</div>
                         <div class="leading-tight min-w-0">
                             <p id="displayUser" class="font-black uppercase text-sm text-white tracking-tight"></p>
                             <p id="displayStation" class="text-[11px] opacity-40 uppercase"></p>
@@ -90,11 +90,14 @@
         <div id="alarmArea" class="max-w-7xl mx-auto p-4 w-full"></div>
         <div id="mullAlarmArea" class="max-w-7xl mx-auto p-4 w-full"></div>
 
+        <div id="notizMonitorGlobal" class="hidden max-w-7xl mx-auto px-4 w-full">
+            <div class="notiz-alarm p-4 shadow-lg text-sm font-bold uppercase rounded">
+                <div id="notizListGlobal" class="space-y-1"></div>
+            </div>
+        </div>
+
         <main class="flex-grow max-w-7xl mx-auto p-4 md:p-8 w-full space-y-6">
             <div id="weschePanel" class="hidden space-y-6">
-                <div id="notizMonitor" class="hidden notiz-alarm p-4 shadow-lg text-sm font-bold uppercase rounded">
-                    <div id="notizList" class="space-y-1"></div>
-                </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 card-dark p-6 rounded">
                         <h3 class="text-[10px] font-black opacity-30 uppercase mb-4 italic">Offene Abholungen</h3>
@@ -473,7 +476,7 @@
                 list.innerHTML = '';
                 s.forEach(snap => {
                     const p = snap.val();
-                    list.innerHTML += '<div class="bg-white/5 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold border border-white/10 whitespace-nowrap shrink-0">' + escapeHtml(snap.key) + ' @' + escapeHtml(p.station || '?') + ' ' + (p.services || '') + '</div>';
+                    list.innerHTML += '<div class="bg-white/5 px-1.5 py-0.5 rounded text-[8px] md:text-[9px] font-bold border border-white/10 whitespace-nowrap shrink-0">' + escapeHtml(snap.key) + ' @' + escapeHtml(p.station || '') + ' ' + (p.services || '') + '</div>';
                 });
                 col.classList.remove('hidden');
                 col.classList.add('flex');
@@ -484,22 +487,19 @@
             });
 
             db.ref('v6/wash').on('value', s => {
-                const list = document.getElementById('wescheList'); const nList = document.getElementById('notizList');
+                const list = document.getElementById('wescheList');
                 if(!user.wesche) {
                     if(list) list.innerHTML = '';
-                    if(nList) nList.innerHTML = '';
-                    document.getElementById('notizMonitor').classList.add('hidden');
                     checkRundgang(0);
                     return;
                 }
-                list.innerHTML = ''; nList.innerHTML = ''; let count = 0; let hasNote = false;
+                list.innerHTML = ''; let count = 0;
                 s.forEach(snap => {
                     const i = snap.val();
-                    if(i.type === 'KORB') { count++; list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase rounded">${escapeHtml(i.station)}<br><span class="opacity-50 text-[9px]">${escapeHtml(i.user || '')}</span></div>`; }
-                    if(i.note) { hasNote = true; nList.innerHTML += `<div class="flex justify-between items-center border-b border-black/5 pb-1"><span>${escapeHtml(i.station)}: ${escapeHtml(i.note)}</span><button onclick="db.ref('v6/wash/${snap.key}').remove()" class="text-red-500 text-[9px]">✕</button></div>`; }
+                    if(i.type === 'KORB') { count++; list.innerHTML += `<div class="p-3 card-dark border-l-4 border-hellgruen relative text-[11px] font-bold uppercase rounded">${escapeHtml(i.station)}<br><button onclick="db.ref('v6/wash/${snap.key}').remove()" class="absolute top-2 right-2 text-[8px] opacity-40 hover:opacity-100">✕</button></div>`; }
                 });
-                document.getElementById('notizMonitor').classList.toggle('hidden', !hasNote);
                 checkRundgang(count);
+                updateNotizMonitor();
             });
 
             db.ref('v6/mull').on('value', s => {
@@ -515,9 +515,10 @@
                     const type = snap.val().type;
                     if(type === 'REST') countRest++;
                     else if(type === 'PAPIER') countPapier++;
-                    list.innerHTML += `<div class="p-3 card-dark border-l-4 ${type==='REST'?'border-orange-500':'border-blue-500'} font-bold rounded">${type}<br>${escapeHtml(snap.val().station)} <button onclick="db.ref('v6/mull/${snap.key}').remove()" class="text-red-500 text-[9px]">✕</button></div>`;
+                    list.innerHTML += `<div class="p-3 card-dark border-l-4 ${type==='REST'?'border-orange-500':'border-blue-500'} font-bold rounded">${type}<br>${escapeHtml(snap.val().station)}<button onclick="db.ref('v6/mull/${snap.key}').remove()" class="text-[8px] opacity-40 hover:opacity-100 ml-1">✕</button></div>`;
                 });
                 checkMullAlert(countRest, countPapier);
+                updateNotizMonitor();
             });
 
             const timers = document.getElementById('timerSection'); timers.innerHTML = '';
@@ -538,6 +539,29 @@
             updateLockButtons();
         }
 
+        function updateNotizMonitor() {
+            const nList = document.getElementById('notizListGlobal');
+            const monitor = document.getElementById('notizMonitorGlobal');
+            if(!nList || !monitor) return;
+            
+            nList.innerHTML = '';
+            let hasNote = false;
+            
+            db.ref('v6/wash').once('value', s => {
+                s.forEach(snap => {
+                    const i = snap.val();
+                    if(i.note && i.user) { 
+                        hasNote = true; 
+                        // Finde den displayName für den user
+                        const staff = STAFF_MEMBERS.find(m => m.key === i.user);
+                        const displayName = staff ? staff.label : i.user;
+                        nList.innerHTML += `<div class="flex justify-between items-center border-b border-black/5 pb-1"><span><strong>${escapeHtml(displayName)}</strong> (${escapeHtml(i.station)}): ${escapeHtml(i.note)}</span></div>`; 
+                    }
+                });
+                monitor.classList.toggle('hidden', !hasNote);
+            });
+        }
+
         function setupDevice(id, lbl, minsList, cId) {
             db.ref('v6/timers/'+id).on('value', s => {
                 const endTime = s.val(); 
@@ -549,7 +573,7 @@
                 if(!endTime) {
                     // No timer running - show start buttons
                     cont.innerHTML = minsList.map(mins => 
-                        `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5 rounded mb-1">${lbl} ${id.slice(1)} - ${mins}min</button>`
+                        `<button onclick="startTimer('${id}', ${mins})" class="w-full p-2 card-dark text-[10px] font-bold border-l-2 border-hellgruen uppercase italic hover:bg-white/5 rounded mb-1">${lbl} ${id.slice(1)} - ${mins}m</button>`
                     ).join('');
                 } else {
                     // Timer running - update countdown
@@ -557,7 +581,7 @@
                         const r = endTime - Date.now();
                         if(r <= 0) {
                             // Timer done - blink
-                            cont.innerHTML = `<button onclick="stopTimer('${id}')" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic rounded">${lbl} ${id.slice(1)} LEEREN</button>`;
+                            cont.innerHTML = `<button onclick="stopTimer('${id}')" class="w-full p-2 bg-red-600 text-white text-[10px] font-black blink uppercase italic rounded">${lbl} ${id.slice(1)} ✓</button>`;
                             
                             // Determine the label for this device
                             let deviceLabel = '';
@@ -573,7 +597,7 @@
                             clearInterval(activeTimers[id]);
                         } else {
                             const m = Math.floor(r/60000), sec = Math.floor((r%60000)/1000);
-                            cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic rounded">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="stopTimer('${id}')" class="ml-1 text-red-500 text-[9px]">✕</button></div>`;
+                            cont.innerHTML = `<div class="w-full p-2 card-dark text-[10px] opacity-50 text-center font-bold italic rounded">${lbl} ${id.slice(1)}: ${m}:${sec<10?'0':''}${sec} <button onclick="stopTimer('${id}')" class="text-[7px] ml-1 opacity-40 hover:opacity-100">cancel</button></div>`;
                         }
                     }, 1000);
                 }
@@ -709,7 +733,7 @@
             const allFree = !t.m1 && !t.m2 && !t.m3 && !t.t1 && !t.t2 && !t.t3;
             if(count >= 3 && allFree) {
                 stopBodenTitleBlink();
-                al.innerHTML = `<button onclick="startRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20 rounded">🧺 Rundgang starten</button>`;
+                al.innerHTML = `<button onclick="startRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20 rounded">🚀 Rundgang starten</button>`;
                 rundgangTitleShouldBlink = true;
                 maybeStartRundgangTitleBlink();
             } else {
@@ -740,7 +764,7 @@
                 stopBodenTitleBlink();
                 al.innerHTML = '<div class="space-y-3">' +
                     '<div class="p-4 bg-red-600 text-white font-bold uppercase blink text-[11px] md:text-sm rounded">Müll entleeren: ' + countRest + ' Rest, ' + countPapier + ' Papier</div>' +
-                    '<button type="button" onclick="startMullRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20 rounded">🗑️ Müll-Rundgang starten</button>' +
+                    '<button type="button" onclick="startMullRundgang()" class="w-full p-6 bg-hellgruen text-dunkel font-black uppercase text-sm animate-bounce shadow-2xl border-2 border-white/20 rounded">🚀 Müllrundgang</button>' +
                     '</div>';
                 if(!titleInterval) {
                     stopRundgangTitleBlink();
@@ -840,7 +864,7 @@
 
         function sendOnlyNote() { 
             const n = document.getElementById('userNotiz').value.trim(); 
-            if(n) { db.ref('v6/wash/'+Date.now()).set({station:user.station, user:user.name, note:n, type:'INFO'}); document.getElementById('userNotiz').value=''; }
+            if(n) { db.ref('v6/wash/'+Date.now()).set({station:user.station, user:user.name, note:n, type:'INFO'}); document.getElementById('userNotiz').value=''; updateNotizMonitor(); }
         }
 
         function adminMenu() {
