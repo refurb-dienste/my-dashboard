@@ -153,13 +153,15 @@
             return date + ' ' + time;
         }
 
-        function nextMondaySixAfter(fromDate) {
-            const from = new Date(fromDate.getTime());
-            let t = new Date(from.getFullYear(), from.getMonth(), from.getDate(), 6, 0, 0, 0);
-            while(t.getDay() !== 1) t.setDate(t.getDate() + 1);
-            if(t <= from) t.setDate(t.getDate() + 7);
-            return t;
-        }
+  function nextMondaySixAfter(fromDate) {
+    // Eintragen bis Sonntag 23:59 → gilt ab dem nächsten Montag 06:00
+    const from = new Date(fromDate.getTime());
+    let t = new Date(from.getFullYear(), from.getMonth(), from.getDate(), 0, 0, 0, 0);
+    t.setDate(t.getDate() + 1);              // ab morgen suchen
+    while(t.getDay() !== 1) t.setDate(t.getDate() + 1);  // nächster Montag
+    t.setHours(6, 0, 0, 0);
+    return t;
+}
 
         function mapObjectToSortedList(map) {
             if(!map || typeof map !== 'object') return [];
@@ -866,7 +868,7 @@
             if(pw !== "admin123") { if(pw !== null && pw !== "") alert("Passwort falsch."); return; }
             const empList = employees.join(', ');
             const val = prompt(
-                "Dienste eintragen (pro Person, bis nächsten Montag 06:00 Uhr Vorschau, danach aktiv):\n\n" +
+                "Dienste für nächste Woche eintragen (bis Sonntag 23:59 möglich, gültig ab Montag 06:00 Uhr):\n\n" +
                 "Format: MAX:WÄSCHE MÜLL, TOM:BODEN, …\n" +
                 "(Namen GROSS wie beim Login, z.B. MIRSADA)\n\n" +
                 "Vorschläge: " + empList
